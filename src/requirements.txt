@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+sqlalchemy
+psycopg2-binary
+python-jose
+passlib
+bcrypt
+python-multipart
+redis
+numpy
+databases
+aiofiles

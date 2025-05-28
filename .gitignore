@@ -1,0 +1,99 @@
+# Frontend directory (separate repository)
+Frontend_Vokaflow/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environment
+venv/
+env/
+ENV/
+venv.bak/
+env.bak/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.backup
+.env.complete
+.env.production
+*.env.bak
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+backend.log
+
+# Temporary files
+temp/
+tmp/
+tmp_backend/
+*.tmp
+*.temp
+
+# Uploads and media
+uploads/
+audio/
+thumbnails/
+static/uploads/
+
+# SSL certificates
+ssl/
+*.pem
+*.key
+*.crt
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node modules (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Backup files
+*.backup
+*.bak
+
+# Cache
+.cache/ 
