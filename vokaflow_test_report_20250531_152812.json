@@ -1,0 +1,59 @@
+{
+  "timestamp": "2025-05-31T15:28:12.052328",
+  "total_time": 5.134456396102905,
+  "summary": {
+    "passed_tests": 3,
+    "total_tests": 7,
+    "success_rate": 42.857142857142854
+  },
+  "results": {
+    "system_health": {
+      "passed": true,
+      "details": {
+        "status": "ok",
+        "version": "1.0.0",
+        "uptime": "unknown",
+        "components": {}
+      }
+    },
+    "authentication": {
+      "passed": false,
+      "details": {}
+    },
+    "messaging": {
+      "passed": false,
+      "details": {}
+    },
+    "translation": {
+      "passed": false,
+      "details": {}
+    },
+    "vicky_integration": {
+      "passed": false,
+      "details": {
+        "ping_successful": true,
+        "successful_interactions": 0,
+        "total_tests": 4
+      }
+    },
+    "realtime_features": {
+      "passed": true,
+      "details": {
+        "websocket_attempted": true,
+        "realtime_messaging": "simulated",
+        "typing_indicators": "simulated",
+        "presence_detection": "simulated"
+      }
+    },
+    "performance": {
+      "passed": true,
+      "details": {
+        "concurrent_requests": 5,
+        "successful_requests": 5,
+        "total_time": 0.14484429359436035,
+        "average_time": 0.02896885871887207,
+        "requests_per_second": 34.51982729815101
+      }
+    }
+  }
+}

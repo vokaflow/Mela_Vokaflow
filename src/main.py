@@ -78,6 +78,7 @@ from src.backend.routers.api_keys import router as api_keys_router
 from src.backend.routers.webhooks import router as webhooks_router
 from src.backend.routers.monitoring import router as monitoring_router
 from src.backend.routers.kinect_dashboard import router as kinect_dashboard_router
+from src.backend.routers.high_scale_tasks import router as high_scale_tasks_router
 
 # Importaciones de TODOS los routers
 from src.backend.routers.health import router as health_router
@@ -1901,6 +1902,7 @@ app.include_router(api_keys_router, prefix=f"{settings.API_PREFIX}/api-keys", ta
 app.include_router(webhooks_router, prefix=f"{settings.API_PREFIX}/webhooks", tags=["Webhooks"])
 app.include_router(monitoring_router, prefix=f"{settings.API_PREFIX}/monitoring", tags=["Monitoring"])
 app.include_router(kinect_dashboard_router, prefix=f"{settings.API_PREFIX}/kinect", tags=["Kinect Dashboard"])
+app.include_router(high_scale_tasks_router, prefix=f"{settings.API_PREFIX}", tags=["High Scale Tasks"])
 
 # Punto de entrada para ejecución directa
 

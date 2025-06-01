@@ -1,4 +1,4 @@
-
+# ACTIVADO: High Scale Task Manager configurado para Redis single-node
 import time
 _last_log_time = 0
 _log_interval = 5  # segundos
@@ -18,6 +18,14 @@ TaskManager optimizado para millones de solicitudes por segundo
 
 import asyncio
 import logging
+import json
+import time
+import uuid
+import hashlib
+import redis.asyncio as aioredis
+
+# High Scale Task Manager - ACTIVADO
+logger = logging.getLogger("vokaflow.high_scale_task_manager")
 import json
 import time
 import uuid
@@ -184,11 +192,9 @@ class HighScaleTaskManager:
                  enable_monitoring: bool = True,
                  partition_count: int = 16):
         
-        # Configuración de Redis Cluster
+        # Configuración de Redis (single-node por defecto)
         self.redis_cluster_nodes = redis_cluster_nodes or [
-            "redis://localhost:7000",
-            "redis://localhost:7001", 
-            "redis://localhost:7002"
+            "redis://localhost:6379"  # Single Redis instance
         ]
         
         # Configuración de workers por tipo
@@ -274,14 +280,14 @@ class HighScaleTaskManager:
             raise
 
     async def _setup_redis_cluster(self):
-        """Configurar conexiones a Redis Cluster"""
+        """Configurar conexiones a Redis (single-node o cluster)"""
         for i, node_url in enumerate(self.redis_cluster_nodes):
             try:
                 pool = aioredis.ConnectionPool.from_url(
                     node_url,
-                    max_connections=100,
+                    max_connections=20,  # Reducido para single-node
                     retry_on_timeout=True,
-                    health_check_interval=30
+                    health_check_interval=60  # Menos frecuente
                 )
                 redis_client = aioredis.Redis(connection_pool=pool)
                 await redis_client.ping()
@@ -289,6 +295,9 @@ class HighScaleTaskManager:
                 logger.info(f"✅ Conectado a Redis node: {node_url}")
             except Exception as e:
                 logger.error(f"❌ Error conectando a Redis {node_url}: {e}")
+                # En modo single-node, esto es crítico
+                if len(self.redis_cluster_nodes) == 1:
+                    logger.warning("⚠️ Redis single-node no disponible, usando modo memoria")
 
     async def _setup_worker_pools(self):
         """Configurar pools de workers especializados"""
@@ -950,10 +959,20 @@ class HighScaleTaskManager:
                 
                 # Obtener longitudes de colas
                 total_queue_length = 0
-                for queue_key in self.queue_keys.values():
-                    redis_client = self._select_redis_node(0)  # Usar primer nodo para métricas
-                    length = await redis_client.zcard(queue_key)
-                    total_queue_length += length
+                
+                # Solo intentar obtener métricas de Redis si hay conexiones disponibles
+                if self.redis_pools:
+                    for queue_key in self.queue_keys.values():
+                        redis_client = self._select_redis_node(0)  # Usar primer nodo para métricas
+                        if redis_client:  # Verificar que redis_client no sea None
+                            try:
+                                length = await redis_client.zcard(queue_key)
+                                total_queue_length += length
+                            except Exception as redis_error:
+                                rate_limited_log(f"⚠️ Error al obtener métricas de Redis para {queue_key}: {redis_error}", "warning")
+                else:
+                    # Modo memoria: contar tareas en memory_queues
+                    total_queue_length = sum(len(queue) for queue in self.memory_queues.values())
                 
                 # Actualizar métricas globales
                 self.global_metrics["total_queue_length"] = total_queue_length
@@ -961,13 +980,14 @@ class HighScaleTaskManager:
                 
                 # Log métricas cada 10 segundos
                 if int(current_time) % 10 == 0:
-                    logger.info(f"📊 Métricas: {self.global_metrics['throughput_per_second']:.0f} tasks/s, "
+                    mode = "Redis" if self.redis_pools else "Memory"
+                    logger.info(f"📊 Métricas ({mode}): {self.global_metrics['throughput_per_second']:.0f} tasks/s, "
                               f"Cola: {total_queue_length}, Workers: {self.global_metrics['active_workers']}")
                 
                 await asyncio.sleep(1)
                 
             except Exception as e:
-                logger.error(f"❌ Error en monitoreo: {e}")
+                rate_limited_log(f"❌ Error en monitoreo: {e}", "error")
                 await asyncio.sleep(5)
 
     async def _auto_scaling_loop(self):
@@ -1033,8 +1053,9 @@ class HighScaleTaskManager:
                     try:
                         pending = await redis_client.zcard(queue_key)
                         total_pending += pending
-                    except Exception:
+                    except Exception as redis_error:
                         # Si Redis no está disponible, continuar sin error
+                        rate_limited_log(f"⚠️ Error al obtener estadísticas de Redis para {queue_key}: {redis_error}", "warning")
                         pass
         
         # Agregar información sobre tareas en memoria
@@ -1108,24 +1129,28 @@ class HighScaleTaskManager:
 high_scale_task_manager = None
 
 def create_optimized_high_scale_manager():
-    """Crear high scale manager con configuración optimizada"""
+    """Crear high scale manager con configuración optimizada para Redis single-node"""
     # Configuración optimizada para evitar sobrecarga
     cpu_count = multiprocessing.cpu_count()
     optimized_workers = {
-        WorkerType.CPU_INTENSIVE: max(1, cpu_count // 2),  # Reducido para evitar sobrecarga
-        WorkerType.IO_INTENSIVE: cpu_count,  # Reducido de cpu_count * 2
-        WorkerType.MEMORY_INTENSIVE: max(1, cpu_count // 4),
-        WorkerType.NETWORK_INTENSIVE: cpu_count,  # Reducido de cpu_count * 4
-        WorkerType.GENERAL_PURPOSE: max(2, cpu_count // 2)
+        WorkerType.CPU_INTENSIVE: max(1, cpu_count // 4),  # Más conservador
+        WorkerType.IO_INTENSIVE: max(2, cpu_count // 2),   # Reducido
+        WorkerType.MEMORY_INTENSIVE: max(1, cpu_count // 8),
+        WorkerType.NETWORK_INTENSIVE: max(2, cpu_count // 2),  # Reducido
+        WorkerType.GENERAL_PURPOSE: max(2, cpu_count // 4)
     }
     
     logger.info(f"🚀 Configuración optimizada: {sum(optimized_workers.values())} workers totales")
     
+    # Configuración para Redis single-node
+    redis_nodes = ["redis://localhost:6379"]  # Single Redis instance
+    
     return HighScaleTaskManager(
+        redis_cluster_nodes=redis_nodes,
         max_workers_per_type=optimized_workers,
-        enable_auto_scaling=True,
+        enable_auto_scaling=False,  # Deshabilitado para evitar sobrecarga
         enable_monitoring=True,
-        partition_count=8  # Reducido de 16 para menos complejidad inicial
+        partition_count=4  # Reducido para single-node
     )
 
 # Funciones de conveniencia para alta escala

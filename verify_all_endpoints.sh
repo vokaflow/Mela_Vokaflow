@@ -138,23 +138,23 @@ for router in health vicky auth users translate tts stt voice conversations syst
 done
 
 echo
+echo "#!/bin/bash
+
 echo "🔗 VERIFICACIÓN DE REGISTRO DE ROUTERS:"
 echo "======================================"
 echo "📁 Verificando registros..."
 
-# Verificar registros
-missing_registers=0
-for router in health vicky auth users translate tts stt voice conversations system models files analytics notifications admin api_keys webhooks monitoring; do
-    if grep -q "${router}_router" src/main.py | grep -q "include_router"; then
-        echo "✅ $router router registrado correctamente"
+routers=("health" "vicky" "auth" "users" "translate" "tts" "stt" "voice" "conversations" "system" "models" "files" "analytics" "notifications" "admin" "api_keys" "webhooks" "monitoring")
+
+for router in "${routers[@]}"; do
+    if grep -q "app.include_router.*${router}_router.*prefix=" src/main.py; then
+        echo "✅ ${router} router registrado correctamente"
     else
-        echo "❌ $router router NO registrado"
-        missing_registers=$((missing_registers + 1))
+        echo "❌ ${router} router NO registrado"
     fi
 done
 
-echo
-echo "📊 RESUMEN FINAL:"
+📊 RESUMEN FINAL:"
 echo "================"
 echo "🎯 Total de endpoints implementados: $total"
 echo "📦 Routers creados: 18"

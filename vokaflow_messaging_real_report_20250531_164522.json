@@ -1,0 +1,49 @@
+{
+  "timestamp": "2025-05-31T16:45:22.848337",
+  "total_time": 1.1693661212921143,
+  "summary": {
+    "passed_tests": 1,
+    "total_tests": 7,
+    "success_rate": 14.285714285714285
+  },
+  "results": {
+    "authentication": {
+      "passed": true,
+      "details": {
+        "username": "admin",
+        "user_id": 1,
+        "backup_login": true
+      }
+    },
+    "conversation_creation": {
+      "passed": false,
+      "details": {}
+    },
+    "message_sending": {
+      "passed": false,
+      "details": {}
+    },
+    "message_retrieval": {
+      "passed": false,
+      "details": {}
+    },
+    "conversation_management": {
+      "passed": false,
+      "details": {}
+    },
+    "search_functionality": {
+      "passed": false,
+      "details": {}
+    },
+    "real_time_messaging": {
+      "passed": false,
+      "details": {
+        "websocket_available": false,
+        "implementation": "not_available",
+        "endpoints_tested": 3
+      }
+    }
+  },
+  "test_type": "REAL_FUNCTIONALITY",
+  "conversations_created": 0
+}

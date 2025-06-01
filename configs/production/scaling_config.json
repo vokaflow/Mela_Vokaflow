@@ -1,0 +1,23 @@
+{
+  "auto_scaling": {
+    "enabled": true,
+    "min_workers": 32,
+    "max_workers": 256,
+    "scale_up_threshold": {
+      "cpu_percent": 70,
+      "memory_percent": 75,
+      "queue_length": 1000
+    },
+    "scale_down_threshold": {
+      "cpu_percent": 30,
+      "memory_percent": 40,
+      "queue_length": 100
+    },
+    "evaluation_interval_seconds": 30
+  },
+  "load_balancing": {
+    "algorithm": "least_connections",
+    "health_check_interval": 10,
+    "max_retries": 3
+  }
+}

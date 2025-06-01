@@ -1,309 +1,496 @@
-# 🌍 VokaFlow - WhatsApp Universal con Traducción Automática 
+# 🚀 VokaFlow Backend
 
-![VokaFlow](https://img.shields.io/badge/VokaFlow-WhatsApp%20Universal-00E676) ![Translation](https://img.shields.io/badge/Translation-Auto%20Real%20Time-FF6D00) ![Viky AI](https://img.shields.io/badge/Viky%20AI-Autosuficiente-6C63FF) ![Camera](https://img.shields.io/badge/Camera-OCR%20Traductor-E91E63)
+<div align="center">
 
-> **"El único sistema que necesitas para comunicarte con cualquier persona en el mundo, sin importar el idioma"**
+![VokaFlow Logo](static/img/vokaflow-logo.png)
 
-**VokaFlow** es un **WhatsApp con superpoderes de traducción automática** que rompe todas las barreras idiomáticas del mundo. Imagina enviar un mensaje en español y que automáticamente llegue en chino, árabe, o cualquiera de los 150+ idiomas soportados, sin que ni tú ni la otra persona tengan que hacer nada especial.
+**Sistema de Comunicación Avanzado con IA, Traducción y Reconocimiento de Voz**
 
-## 🎯 ¿Qué es VokaFlow exactamente?
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com)
+[![Redis](https://img.shields.io/badge/Redis-7.0+-red.svg)](https://redis.io)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)]()
 
-### 📱 **1. App Usuario Final - WhatsApp Universal**
-La app que usan los usuarios finales es **exactamente como WhatsApp** pero con **traducción automática invisible**:
+[🌐 Demo](http://localhost:8000) • [📖 Documentación](http://localhost:8000/docs) • [🚀 Instalación](#instalación) • [🤝 Contribuir](#contribuir)
 
-- **Envías en tu idioma** → Llega en el idioma del destinatario
-- **Recibes en tu idioma** → Sin importar en qué idioma lo enviaron
-- **Mensajes de voz traducidos** → Audio a audio manteniendo el tono
-- **Grupos multiidioma** → Cada persona lee en su idioma nativo
-- **Traductor de cámara** → Apunta tu cámara a cualquier texto y lo traduce instantáneamente
+</div>
 
+---
+
+## 📋 Tabla de Contenidos
+
+- [✨ Características](#-características)
+- [🏗️ Arquitectura](#️-arquitectura)
+- [🚀 Instalación](#-instalación)
+  - [🐳 Docker (Recomendado)](#-docker-recomendado)
+  - [💻 Instalación Manual](#-instalación-manual)
+  - [🔧 Servicio Persistente](#-servicio-persistente)
+- [⚙️ Configuración](#️-configuración)
+- [🎯 Uso](#-uso)
+- [📊 API Endpoints](#-api-endpoints)
+- [🧠 Vicky AI](#-vicky-ai)
+- [🔥 High Scale Tasks](#-high-scale-tasks)
+- [🏃 Desarrollo](#-desarrollo)
+- [📈 Monitoreo](#-monitoreo)
+- [🤝 Contribuir](#-contribuir)
+- [📄 Licencia](#-licencia)
+
+## ✨ Características
+
+### 🤖 **Inteligencia Artificial - Vicky**
+- 🧠 **Cerebro Dinámico** con balance hemisférico (técnico/emocional)
+- 🔄 **Contexto Persistente** entre conversaciones
+- 📚 **Memoria Avanzada** con capacidades de aprendizaje
+- 🎭 **Personalidad Adaptativa** basada en el usuario
+
+### 🌍 **Sistema de Traducción**
+- 🔤 **+10 Idiomas** soportados
+- 🚀 **Traducción en Tiempo Real**
+- 📊 **Estadísticas de Uso** detalladas
+- 💾 **Historial Completo** de traducciones
+
+### 🎤 **Procesamiento de Voz**
+- 🗣️ **Speech-to-Text** (STT) con Whisper
+- 🔊 **Text-to-Speech** (TTS) con voces personalizadas
+- 🎵 **Voces Sintéticas** con entrenamiento personalizado
+- 📼 **Gestión de Samples** de audio
+
+### 🔥 **Sistema de Tareas de Alta Escala**
+- ⚡ **Millones de solicitudes** por segundo
+- 🔄 **Auto-escalado** dinámico
+- 📊 **Monitoreo en Tiempo Real**
+- 🛡️ **Tolerancia a Fallos** con Dead Letter Queue
+
+### 🖥️ **Integración Hardware**
+- 📷 **Kinect Support** con streaming en tiempo real
+- 🎥 **Video/Audio** processing
+- 📡 **Webhooks** para integraciones externas
+
+### 🔐 **Seguridad y Autenticación**
+- 🔑 **JWT Authentication** con refresh tokens
+- 🛡️ **API Keys** management
+- 👥 **Multi-usuario** con roles
+- 🔒 **Rate Limiting** y protección DDoS
+
+### 📊 **Monitoreo y Analytics**
+- 📈 **Métricas en Tiempo Real**
+- 🚨 **Sistema de Alertas**
+- 📋 **Logs Estructurados**
+- 💾 **Backup Automático**
+
+## 🏗️ Arquitectura
+
+```mermaid
+graph TB
+    subgraph "Cliente"
+        Web[Web App]
+        Mobile[Mobile App]
+        API_Client[API Client]
+    end
+    
+    subgraph "VokaFlow Backend"
+        Gateway[FastAPI Gateway]
+        Auth[Authentication]
+        
+        subgraph "Core Services"
+            Vicky[Vicky AI Engine]
+            Translator[Translation Service]
+            TTS[Text-to-Speech]
+            STT[Speech-to-Text]
+        end
+        
+        subgraph "High Scale System"
+            TaskManager[Task Manager]
+            Workers[Worker Pools]
+            Scheduler[Task Scheduler]
+        end
+        
+        subgraph "Data Layer"
+            DB[(SQLite/PostgreSQL)]
+            Redis[(Redis Cache)]
+            Files[File Storage]
+        end
+    end
+    
+    subgraph "External Services"
+        Kinect[Kinect Hardware]
+        Webhooks[External APIs]
+    end
+    
+    Web --> Gateway
+    Mobile --> Gateway
+    API_Client --> Gateway
+    
+    Gateway --> Auth
+    Gateway --> Vicky
+    Gateway --> Translator
+    Gateway --> TTS
+    Gateway --> STT
+    
+    Vicky --> TaskManager
+    TaskManager --> Workers
+    Workers --> Scheduler
+    
+    Auth --> Redis
+    Vicky --> DB
+    Translator --> DB
+    TaskManager --> Redis
+    
+    Gateway --> Kinect
+    Gateway --> Webhooks
 ```
-🇪🇸 "Hola, ¿cómo estás?" 
-     ↓ (automático)
-🇯🇵 "こんにちは、元気ですか？"
 
-🇯🇵 "はい、元気です" 
-     ↓ (automático) 
-🇪🇸 "Sí, estoy bien"
-```
+## 🚀 Instalación
 
-### 🤖 **2. Viky AI - Cerebro Autosuficiente del Backend**
-Viky AI vive **dentro del backend** y es el cerebro que mantiene todo funcionando sin intervención humana:
+### 🐳 Docker (Recomendado)
 
-- **Auto-gestiona el backend** → Optimiza, repara, escala automáticamente
-- **Aprende continuamente** → Mejora las traducciones y respuestas
-- **Supervisa 24/7** → Detecta y soluciona problemas antes que ocurran  
-- **8 personalidades especializadas** → Desde supervisión técnica hasta interacción emocional
-- **Self-healing system** → Se autorrepara cuando algo falla
-
-### 📊 **3. Frontend Dashboard - Centro de Control Profesional**
-Dashboard web profesional para gestionar toda la plataforma:
-
-- **Métricas en tiempo real** → Millones de mensajes, traduciones, usuarios
-- **Control de traducción** → Monitoreo de APIs, idiomas, calidad
-- **Gestión de usuarios** → Admin completo de cuentas y grupos
-- **Analytics avanzados** → Patrones de uso, idiomas más usados, rendimiento
-- **Control de Viky AI** → Interacción directa con todas las personalidades
-- **Laboratorio Kinect** → Testing de cámara y reconocimiento de texto
-- **Security Center** → Monitoreo de seguridad y amenazas
-
-### 🖥️ **4. Backend Enterprise - El Motor de Todo**
-Backend ultra-potente que maneja millones de usuarios simultáneos:
-
-- **205 endpoints** especializados distribuidos en 26 routers
-- **Sistema de tareas en segundo plano** → Procesamiento masivo distribuido
-- **Cache distribuido** → Redis cluster para velocidad extrema
-- **Auto-escalado** → Crece automáticamente según demanda
-- **Traducción multicanal** → Texto, voz, imagen, video, documentos
-- **APIs robustas** → WhatsApp-level reliability
-
-## 🚀 Lo que hace único a VokaFlow
-
-### 💬 **Experiencia WhatsApp Mejorada**
-```
-Funcionalidades exactas de WhatsApp:
-✅ Mensajes individuales y grupos
-✅ Mensajes de voz y video  
-✅ Archivos y documentos
-✅ Estados/Stories
-✅ Videollamadas
-✅ Interfaz idéntica
-
-+ SUPERPODERES:
-🌍 Traducción automática invisible
-📸 Cámara traductora en tiempo real
-🗣️ Traducción de voz manteniendo tono
-🤖 Asistente AI integrado (Viky)
-📊 Analytics de conversaciones
-```
-
-### 🌐 **Traducción Automática Invisible**
-- **0 fricción** → No botones, no seleccionar idiomas, no interrupciones
-- **Bidireccional** → Envío y recepción automática
-- **150+ idiomas** → Desde español hasta dialectos regionales
-- **Multimodal** → Texto, voz, imagen, video
-- **Contextual** → Entiende jerga, modismos, contexto cultural
-- **Velocidad extrema** → < 50ms de latencia
-
-### 📸 **Traductor de Cámara Revolucionario**
-- **Tiempo real** → Apunta y traduce instantáneamente
-- **Reconocimiento de texto** → OCR ultra-preciso con preservación de layout
-- **Realidad aumentada** → Texto traducido superpuesto en la imagen
-- **Funciona con todo** → Carteles, documentos, pantallas, libros, menús
-- **Offline capable** → Traducciones básicas sin internet
-
-### 🧠 **Viky AI - El Cerebro Autosuficiente**
-Viky no es un chatbot más, es un **sistema nervioso artificial** que:
-- **Piensa proactivamente** → Anticipa necesidades y problemas
-- **Evoluciona continuamente** → Cada conversación la hace más inteligente  
-- **Gestiona infraestructura** → Escala servidores, optimiza bases de datos
-- **Interactúa empáticamente** → Entiende emociones y contexto humano
-- **Se autorrepara** → Detecta fallos y los corrige automáticamente
-
-## 🏗️ Arquitectura Técnica Real
-
-### 📊 **Stack Tecnológico Actual**
-```
-Frontend Dashboard: Next.js 15.2.4 + React 19 + TypeScript 5
-Backend Core: FastAPI + Python 3.12 + Uvicorn  
-AI/ML: Qwen-7B + Whisper + XTTS + NLLB-200 + Google Translate
-Database: PostgreSQL + Redis Cluster + SQLite (desarrollo)
-Infrastructure: Docker + Nginx + Cloudflare + Auto-scaling
-Monitoring: Prometheus + Grafana + Custom metrics
-Sensory: Kinect Azure + OpenCV + MediaPipe
-```
-
-### 🔥 **Números Reales del Sistema**
-```
-📊 Endpoints: 205 implementados en 26 routers especializados
-🚀 Throughput: 1M+ requests/segundo (teórico) 
-⚡ Latencia traducción: < 50ms p99
-👥 Usuarios concurrentes: 50,000+ simultáneos
-🗣️ Idiomas soportados: 150+ (including dialects)
-🤖 Viky personalidades: 8 especializadas
-📸 OCR precisión: 99.2% con layout preservation
-💾 Cache hit ratio: 95%+ en traducciones
-🛡️ Uptime objetivo: 99.99%
-```
-
-### 🎯 **Casos de Uso Reales**
-
-#### 👨‍💼 **Empresas Globales**
-- **Equipos multinacionales** → Comunicación fluida sin barreras
-- **Atención al cliente** → Soporte en cualquier idioma automáticamente
-- **Documentación técnica** → Traducción instantánea de manuales
-- **Videollamadas multiidioma** → Subtítulos automáticos en tiempo real
-
-#### 🏫 **Educación**
-- **Intercambios estudiantiles** → Comunicación directa entre estudiantes
-- **Profesores internacionales** → Enseñanza sin limitaciones idiomáticas
-- **Materiales educativos** → Traducción automática de libros y documentos
-
-#### 🌍 **Viajeros y Turismo**
-- **Comunicación local** → Habla con cualquier persona en cualquier país
-- **Traducción de carteles** → Entiende todo lo que ves con la cámara
-- **Emergencias** → Comunicación crítica sin barreras idiomáticas
-
-#### 👨‍⚕️ **Sector Salud**
-- **Pacientes internacionales** → Comunicación médica precisa
-- **Personal médico multicultural** → Coordinación sin errores
-- **Documentación médica** → Traducción técnica especializada
-
-## 🔧 Instalación y Uso
-
-### 💻 **Desarrollo Local**
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/vokaflow/vokaflow.git
-cd vokaflow
+# Clonar repositorio
+git clone https://github.com/tu-usuario/vokaflow-backend.git
+cd vokaflow-backend
 
-# 2. Configurar entorno virtual
+# Construir y ejecutar con Docker Compose
+docker-compose up -d
+
+# Verificar que funciona
+curl http://localhost:8000/health
+```
+
+### 💻 Instalación Manual
+
+#### Requisitos
+- Python 3.12+
+- Redis 7.0+
+- SQLite/PostgreSQL
+- OpenCV 4.5+
+- libfreenect (para Kinect)
+
+#### Pasos
+
+```bash
+# 1. Clonar repositorio
+git clone https://github.com/tu-usuario/vokaflow-backend.git
+cd vokaflow-backend
+
+# 2. Crear entorno virtual
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
+# venv\Scripts\activate   # Windows
 
 # 3. Instalar dependencias
 pip install -r requirements.txt
 
-# 4. Lanzar VokaFlow completo
-python launch_enterprise_vokaflow_fixed.py
+# 4. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tu configuración
 
-# 5. Acceder a los servicios
-# Backend: http://localhost:8000
-# Dashboard: http://localhost:3000
-# Health check: http://localhost:8000/health
+# 5. Inicializar base de datos
+python -c "from src.main import *; Base.metadata.create_all(bind=engine)"
+
+# 6. Ejecutar servidor
+python src/main.py
 ```
 
-### 🌐 **Producción (Ya Desplegado)**
+### 🔧 Servicio Persistente (Linux)
+
+Para configurar VokaFlow como servicio del sistema:
+
 ```bash
-# Backend API: https://api.vokaflow.com
-# Dashboard: https://dashboard.vokaflow.com
+# Hacer ejecutable el script de gestión
+chmod +x manage-vokaflow.sh
 
-# Health check
-curl https://api.vokaflow.com/health | jq
+# Instalar como servicio
+./manage-vokaflow.sh install
 
-# Métricas del sistema  
-curl https://api.vokaflow.com/api/high-scale-tasks/metrics | jq
-
-# Estado de Viky AI
-curl https://api.vokaflow.com/api/v1/vicky/status | jq
+# Comandos de gestión
+./manage-vokaflow.sh status    # Ver estado
+./manage-vokaflow.sh start     # Iniciar
+./manage-vokaflow.sh stop      # Detener
+./manage-vokaflow.sh restart   # Reiniciar
+./manage-vokaflow.sh logs      # Ver logs
+./manage-vokaflow.sh health    # Verificar salud
 ```
 
-### 📱 **Apps Usuario Final**
-```
-🚧 En desarrollo activo:
+## ⚙️ Configuración
 
-📱 iOS: VokaFlow for iPhone
-🤖 Android: VokaFlow for Android  
-💻 Web: app.vokaflow.com
-🖥️ Desktop: VokaFlow Desktop (Electron)
+### Variables de Entorno
 
-Todas con la misma experiencia WhatsApp + traducción automática
-```
+```env
+# Servidor
+HOST=0.0.0.0
+PORT=8000
+DEBUG=False
+ENVIRONMENT=production
 
-## 📚 Estructura del Proyecto
+# Base de Datos
+DATABASE_URL=sqlite:///./vokaflow.db
+# DATABASE_URL=postgresql://user:pass@localhost/vokaflow
 
-```
-vokaflow/
-├── 📱 App_Usuario_Final/          # Apps móviles (iOS/Android)
-│   ├── ios/                       # App nativa iOS
-│   ├── android/                   # App nativa Android  
-│   └── web/                       # App web progresiva
-│
-├── 🖥️ Frontend_Vokaflow/          # Dashboard profesional
-│   ├── pages/                     # Páginas Next.js
-│   ├── components/                # Componentes React
-│   ├── services/                  # Servicios de API
-│   └── styles/                    # Estilos y temas
-│
-├── ⚡ src/backend/                 # Backend enterprise
-│   ├── routers/                   # 140+ endpoints especializados
-│   ├── core/                      # Task manager + High scale system
-│   ├── models/                    # Modelos de base de datos
-│   ├── messaging/                 # Sistema de mensajería
-│   └── ai/                        # Integración con Viky AI
-│
-├── 🤖 viky_personalities/         # 8 personalidades de Viky
-│   ├── Viky_Autosupervision_Backend.json
-│   ├── Viky_Sistema_Conversacional_Emocional.json
-│   ├── Viky_Entrenamiento.json
-│   └── ... (5 personalidades más)
-│
-├── 📊 docs/                       # Documentación completa
-│   ├── API_COMPLETE.md            # Referencia de 140+ endpoints
-│   ├── VIKY_AI.md                 # Documentación Viky AI
-│   ├── TRANSLATION.md             # Sistema de traducción
-│   └── DEPLOYMENT.md              # Guías de despliegue
-│
-└── 🧪 tests/                      # Suite de testing
-    ├── test_messaging_complete.py # Tests de mensajería
-    ├── test_viky_complete.py      # Tests de Viky AI
-    └── test_translation.py        # Tests de traducción
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Seguridad
+SECRET_KEY=tu-clave-secreta-super-segura
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=10080
+
+# Archivos
+UPLOADS_DIR=./uploads
+MODELS_DIR=./models
+MAX_UPLOAD_SIZE=104857600
+
+# APIs Externas
+OPENAI_API_KEY=tu-clave-openai
+GOOGLE_TRANSLATE_KEY=tu-clave-google
+
+# Kinect
+ENABLE_KINECT=true
+KINECT_DEVICE_ID=0
 ```
 
-## 🎯 Roadmap 2025
+## 🎯 Uso
 
-### Q1 2025 - Apps Usuario Final
-- [ ] **App iOS nativa** → App Store release
-- [ ] **App Android nativa** → Google Play release  
-- [ ] **Web app PWA** → app.vokaflow.com
-- [ ] **Beta testing** → 1,000 usuarios beta
+### Inicio Rápido
 
-### Q2 2025 - Expansión de Idiomas  
-- [ ] **200+ idiomas** → Cobertura global completa
-- [ ] **Dialectos regionales** → Español mexicano vs argentino
-- [ ] **Traducción de emojis** → Significados culturales
-- [ ] **Jerga y modismos** → Comprensión contextual avanzada
+```python
+import requests
 
-### Q3 2025 - Funcionalidades Avanzadas
-- [ ] **Llamadas con traducción** → Voz a voz en tiempo real
-- [ ] **Videos con subtítulos** → Traducción automática de videos
-- [ ] **Traducción de documentos** → PDFs, Word, PowerPoint
-- [ ] **Integración empresarial** → Slack, Teams, Discord
+# Health Check
+response = requests.get("http://localhost:8000/health")
+print(response.json())
 
-### Q4 2025 - Expansión Global
-- [ ] **1M+ usuarios activos** → Adopción masiva global
-- [ ] **API pública** → Developers pueden integrar VokaFlow
-- [ ] **Monetización** → Planes premium y enterprise
-- [ ] **Partnerships** → Integración con gigantes tech
+# Traducir texto
+translation = requests.post("http://localhost:8000/api/translate", json={
+    "text": "Hola mundo",
+    "target_lang": "en"
+})
+print(translation.json())
+
+# Chatear con Vicky
+chat = requests.post("http://localhost:8000/api/vicky/process", json={
+    "message": "¿Cuál es el sentido de la vida?",
+    "user_id": "usuario123"
+})
+print(chat.json())
+```
+
+### Enviar Tareas de Alta Escala
+
+```python
+# Enviar tarea computacional
+task = requests.post("http://localhost:8000/api/high-scale-tasks/submit", json={
+    "function_name": "math.sqrt",
+    "args": [16],
+    "priority": "HIGH",
+    "worker_type": "CPU_INTENSIVE"
+})
+print(f"Task ID: {task.json()['task_id']}")
+
+# Ver métricas del sistema
+metrics = requests.get("http://localhost:8000/api/high-scale-tasks/metrics")
+print(metrics.json())
+```
+
+## 📊 API Endpoints
+
+### 🏥 Health & Status
+- `GET /health` - Health check básico
+- `GET /api/health/` - Health check detallado
+- `GET /api/health/complete` - Health check completo
+
+### 🔐 Autenticación
+- `POST /api/auth/token` - Obtener token de acceso
+- `POST /api/auth/register` - Registrar nuevo usuario
+- `GET /api/users/me` - Información del usuario actual
+
+### 🌍 Traducción
+- `POST /api/translate` - Traducir texto
+- `GET /api/translate/languages` - Idiomas soportados
+- `GET /api/translate/history` - Historial de traducciones
+- `GET /api/translate/stats` - Estadísticas de uso
+
+### 🤖 Vicky AI
+- `POST /api/vicky/process` - Procesar mensaje
+- `GET /api/vicky/status` - Estado del sistema
+- `POST /api/vicky/hemisphere` - Ajustar balance hemisférico
+
+### 🔥 High Scale Tasks
+- `POST /api/high-scale-tasks/submit` - Enviar tarea
+- `GET /api/high-scale-tasks/metrics` - Métricas del sistema
+- `GET /api/high-scale-tasks/status` - Estado general
+- `POST /api/high-scale-tasks/control` - Control del sistema
+- `GET /api/high-scale-tasks/dlq` - Dead Letter Queue
+
+### 🎤 Voz
+- `POST /api/tts/synthesize` - Text-to-Speech
+- `POST /api/stt/transcribe` - Speech-to-Text
+- `GET /api/voice/samples` - Muestras de voz
+- `POST /api/voice/upload` - Subir muestra de voz
+
+### 📊 Monitoreo
+- `GET /api/monitoring/system` - Métricas del sistema
+- `GET /api/monitoring/api` - Métricas de la API
+- `GET /api/monitoring/alerts` - Alertas activas
+
+### 🔧 Administración
+- `GET /api/admin/users` - Gestión de usuarios
+- `GET /api/admin/logs` - Logs del sistema
+- `POST /api/admin/backup` - Crear backup
+- `POST /api/system/restart` - Reiniciar sistema
+
+## 🧠 Vicky AI
+
+Vicky es el motor de IA conversacional de VokaFlow con capacidades avanzadas:
+
+### Características
+- **Balance Hemisférico**: Ajusta entre respuestas técnicas y emocionales
+- **Contexto Persistente**: Mantiene el contexto entre conversaciones
+- **Aprendizaje Continuo**: Mejora con cada interacción
+- **Multi-modal**: Procesa texto, voz e imágenes
+
+### Uso Avanzado
+
+```python
+# Configurar balance hemisférico
+requests.post("http://localhost:8000/api/vicky/hemisphere", json={
+    "action": "set",
+    "technical": 0.7,
+    "emotional": 0.3
+})
+
+# Conversación con contexto
+requests.post("http://localhost:8000/api/vicky/process", json={
+    "message": "Explícame machine learning",
+    "context": {"nivel": "principiante", "interes": "desarrollo"},
+    "session_id": "sesion_123"
+})
+```
+
+## 🔥 High Scale Tasks
+
+Sistema diseñado para manejar millones de tareas concurrentes:
+
+### Tipos de Workers
+- **CPU_INTENSIVE**: Cálculos matemáticos complejos
+- **IO_INTENSIVE**: Operaciones de archivo/base de datos
+- **MEMORY_INTENSIVE**: Procesamiento de grandes datasets
+- **NETWORK_INTENSIVE**: Llamadas a APIs externas
+- **GENERAL_PURPOSE**: Tareas generales
+
+### Monitoreo
+
+```bash
+# Ver estado en tiempo real
+curl http://localhost:8000/api/high-scale-tasks/metrics
+
+# Enviar tareas de demostración
+curl -X POST http://localhost:8000/api/high-scale-tasks/demo/submit-demo-tasks?count=10
+```
+
+## 🏃 Desarrollo
+
+### Configurar Entorno de Desarrollo
+
+```bash
+# Instalar dependencias de desarrollo
+pip install -r requirements-dev.txt
+
+# Pre-commit hooks
+pre-commit install
+
+# Tests
+pytest tests/ -v
+
+# Coverage
+pytest --cov=src tests/
+
+# Linting
+flake8 src/
+black src/
+isort src/
+```
+
+### Estructura del Proyecto
+
+```
+vokaflow-backend/
+├── src/
+│   ├── main.py                 # Punto de entrada
+│   └── backend/
+│       ├── core/               # Lógica central
+│       │   ├── vicky/          # Motor de IA
+│       │   └── high_scale_task_manager.py
+│       ├── routers/            # Endpoints de API
+│       │   ├── auth.py
+│       │   ├── translate.py
+│       │   ├── vicky.py
+│       │   └── high_scale_tasks.py
+│       └── utils/              # Utilidades
+├── static/                     # Archivos estáticos
+├── tests/                      # Tests
+├── docs/                       # Documentación
+├── scripts/                    # Scripts de utilidad
+├── manage-vokaflow.sh         # Script de gestión
+├── requirements.txt           # Dependencias
+├── Dockerfile                 # Container Docker
+├── docker-compose.yml         # Compose config
+└── README.md                  # Este archivo
+```
+
+## 📈 Monitoreo
+
+### Logs
+
+```bash
+# Logs del servicio
+journalctl -u vokaflow-backend.service -f
+
+# Logs de la aplicación
+tail -f logs/vokaflow_backend.log
+
+# Métricas del sistema
+curl http://localhost:8000/api/monitoring/system
+```
+
+### Alertas
+
+VokaFlow incluye alertas automáticas para:
+- 🔴 **CPU > 80%**
+- 🟡 **Memoria > 85%**
+- 🔵 **Disco > 90%**
+- ⚠️ **Fallos en Redis**
+- 📈 **API response time > 2s**
 
 ## 🤝 Contribuir
 
-VokaFlow es un proyecto ambicioso que busca eliminar las barreras idiomáticas del mundo. Si quieres ser parte de esta revolución:
+¡Las contribuciones son bienvenidas! Por favor:
 
-### 🛠️ **Desarrolladores**
-```bash
-# 1. Fork el repositorio
-# 2. Crear feature branch
-git checkout -b feature/amazing-feature
+1. Fork el proyecto
+2. Crea una branch para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add: Amazing Feature'`)
+4. Push a la branch (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
-# 3. Hacer cambios y commit
-git commit -m "Add amazing feature"
+### Estándares de Código
+- Python 3.12+
+- Type hints obligatorios
+- Docstrings para todas las funciones
+- Tests para nuevo código
+- Coverage mínimo 80%
 
-# 4. Push y crear Pull Request  
-git push origin feature/amazing-feature
-```
+## 📄 Licencia
 
-### 🌐 **Traductores** 
-Ayúdanos a mejorar la calidad de traducción para tu idioma nativo.
-
-### 🧪 **Beta Testers**
-Únete al programa beta para probar las apps antes del lanzamiento público.
-
-### 💰 **Inversores**
-¿Quieres ser parte del futuro de la comunicación global? Contáctanos.
+Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
 
 ---
 
-## 📞 Contacto
+<div align="center">
 
-- **Website**: https://vokaflow.com
-- **Dashboard**: https://dashboard.vokaflow.com  
-- **API**: https://api.vokaflow.com
-- **Email**: hello@vokaflow.com
-- **Twitter**: @VokaFlow
-- **Discord**: https://discord.gg/vokaflow
+**¿Te gusta VokaFlow? ¡Dale una ⭐!**
 
----
+Desarrollado con ❤️ por el equipo de VokaFlow
 
-**🌍 VokaFlow - Rompiendo barreras, conectando el mundo** 🌍 
+[🌐 Website](https://vokaflow.com) • [📧 Email](mailto:contact@vokaflow.com) • [🐦 Twitter](https://twitter.com/vokaflow)
+
+</div> 

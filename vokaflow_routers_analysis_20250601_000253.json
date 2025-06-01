@@ -1,0 +1,661 @@
+{
+  "analysis_timestamp": "20250601_000253",
+  "summary": {
+    "total_routers": 25,
+    "active_routers": 5,
+    "configured_routers": 0,
+    "inactive_routers": 20,
+    "total_endpoints": 23
+  },
+  "routers": {
+    "admin": {
+      "file_path": "src/backend/routers/admin.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "analytics": {
+      "file_path": "src/backend/routers/analytics.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "api_keys": {
+      "file_path": "src/backend/routers/api_keys.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "auth": {
+      "file_path": "src/backend/routers/auth.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "auth_robust": {
+      "file_path": "src/backend/routers/auth_robust.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "conversations": {
+      "file_path": "src/backend/routers/conversations.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "dashboard": {
+      "file_path": "src/backend/routers/dashboard.py",
+      "file_size": 9824,
+      "lines_count": 249,
+      "has_router": true,
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/stats",
+          "line": 78,
+          "function": "get_dashboard_stats",
+          "description": ""
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "line": 184,
+          "function": "get_dashboard_health",
+          "description": ""
+        },
+        {
+          "method": "GET",
+          "path": "/metrics/realtime",
+          "line": 224,
+          "function": "get_realtime_metrics",
+          "description": ""
+        }
+      ],
+      "imports": [
+        "from fastapi import APIRouter, HTTPException, Depends",
+        "from typing import Dict, Any, List, Optional",
+        "from datetime import datetime, timedelta",
+        "import random",
+        "import asyncio",
+        "import psutil",
+        "from sqlalchemy.orm import Session",
+        "from sqlalchemy import func, and_",
+        "import time",
+        "import logging",
+        "from ..database import get_db, UserDB, TranslationDB, ConversationDB, MessageDB"
+      ],
+      "description": "Router para dashboard con estadísticas generales del sistema",
+      "tags": [
+        "Dashboard"
+      ],
+      "prefix": "",
+      "status": "active"
+    },
+    "files": {
+      "file_path": "src/backend/routers/files.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "health": {
+      "file_path": "src/backend/routers/health.py",
+      "file_size": 2330,
+      "lines_count": 84,
+      "has_router": true,
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "line": 31,
+          "function": "health_check",
+          "description": ""
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "line": 40,
+          "function": "get_system_status",
+          "description": ""
+        },
+        {
+          "method": "GET",
+          "path": "/version",
+          "line": 72,
+          "function": "get_version",
+          "description": ""
+        }
+      ],
+      "imports": [
+        "from fastapi import APIRouter, HTTPException",
+        "from pydantic import BaseModel",
+        "from typing import Dict, Any",
+        "import os",
+        "import time",
+        "from datetime import datetime",
+        "import subprocess",
+        "import shutil"
+      ],
+      "description": "Health check básico del sistema return HealthResponse( status=\"healthy\", timestamp=datetime.now().isoformat(), uptime=time.time() )  @router.get(\"/status\", response_model=SystemStatus) async def get_system_status():",
+      "tags": [],
+      "prefix": "",
+      "status": "active"
+    },
+    "high_scale_tasks": {
+      "file_path": "src/backend/routers/high_scale_tasks.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "kinect": {
+      "file_path": "src/backend/routers/kinect.py",
+      "file_size": 8640,
+      "lines_count": 240,
+      "has_router": true,
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/status",
+          "line": 43,
+          "function": "get_status",
+          "description": ""
+        },
+        {
+          "method": "POST",
+          "path": "/initialize",
+          "line": 60,
+          "function": "initialize",
+          "description": ""
+        },
+        {
+          "method": "POST",
+          "path": "/look-at",
+          "line": 83,
+          "function": "look_at",
+          "description": ""
+        },
+        {
+          "method": "POST",
+          "path": "/look-up",
+          "line": 109,
+          "function": "look_up",
+          "description": ""
+        },
+        {
+          "method": "POST",
+          "path": "/look-down",
+          "line": 132,
+          "function": "look_down",
+          "description": ""
+        },
+        {
+          "method": "POST",
+          "path": "/look-center",
+          "line": 155,
+          "function": "look_center",
+          "description": ""
+        },
+        {
+          "method": "POST",
+          "path": "/capture",
+          "line": 178,
+          "function": "capture_image",
+          "description": ""
+        },
+        {
+          "method": "POST",
+          "path": "/scan",
+          "line": 205,
+          "function": "scan_room",
+          "description": ""
+        },
+        {
+          "method": "GET",
+          "path": "/scan-results",
+          "line": 223,
+          "function": "get_scan_results",
+          "description": ""
+        }
+      ],
+      "imports": [
+        "from fastapi import APIRouter, HTTPException, BackgroundTasks",
+        "from pydantic import BaseModel",
+        "import sys",
+        "import os",
+        "import json",
+        "import logging",
+        "from typing import Dict, List, Optional, Any",
+        "from kinect_integration import KinectAPI"
+      ],
+      "description": "Obtiene el estado actual de la Kinect if not kinect_available: raise HTTPException(status_code=503, detail=\"El servicio de Kinect no está disponible\")  try: status = kinect_api.get_status() return KinectStatusResponse( connected=status[\"connected\"], angle=status[\"angle\"], accelerometer=status[\"accelerometer\"], last_capture=status[\"last_capture\"] ) except Exception as e: raise HTTPException(status_code=500, detail=f\"Error al obtener el estado de la Kinect: {str(e)}\")  @router.post(\"/initialize\", response_model=KinectResponse) async def initialize():",
+      "tags": [
+        "kinect"
+      ],
+      "prefix": "/api/kinect",
+      "status": "active"
+    },
+    "kinect_dashboard": {
+      "file_path": "src/backend/routers/kinect_dashboard.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "models": {
+      "file_path": "src/backend/routers/models.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "monitoring": {
+      "file_path": "src/backend/routers/monitoring.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "notifications": {
+      "file_path": "src/backend/routers/notifications.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "stt": {
+      "file_path": "src/backend/routers/stt.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "system": {
+      "file_path": "src/backend/routers/system.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "tasks": {
+      "file_path": "src/backend/routers/tasks.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "translate": {
+      "file_path": "src/backend/routers/translate.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "translations_dashboard": {
+      "file_path": "src/backend/routers/translations_dashboard.py",
+      "file_size": 4692,
+      "lines_count": 131,
+      "has_router": true,
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/stats",
+          "line": 19,
+          "function": "get_translation_stats",
+          "description": ""
+        }
+      ],
+      "imports": [
+        "from fastapi import APIRouter, HTTPException, Depends",
+        "from sqlalchemy.orm import Session",
+        "from sqlalchemy import func, and_",
+        "from datetime import datetime, timedelta",
+        "import time",
+        "import logging",
+        "from ..database import get_db, TranslationDB, UserDB"
+      ],
+      "description": "Router para estadísticas del dashboard de traducciones",
+      "tags": [],
+      "prefix": "",
+      "status": "active"
+    },
+    "tts": {
+      "file_path": "src/backend/routers/tts.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "users": {
+      "file_path": "src/backend/routers/users.py",
+      "file_size": 15798,
+      "lines_count": 438,
+      "has_router": true,
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/profile",
+          "line": 57,
+          "function": "get_user_profile",
+          "description": ""
+        },
+        {
+          "method": "PUT",
+          "path": "/profile",
+          "line": 84,
+          "function": "update_user_profile",
+          "description": ""
+        },
+        {
+          "method": "GET",
+          "path": "/preferences",
+          "line": 116,
+          "function": "get_user_preferences",
+          "description": ""
+        },
+        {
+          "method": "GET",
+          "path": "/stats",
+          "line": 139,
+          "function": "get_user_statistics",
+          "description": ""
+        },
+        {
+          "method": "GET",
+          "path": "/status",
+          "line": 160,
+          "function": "users_service_status",
+          "description": ""
+        },
+        {
+          "method": "GET",
+          "path": "/list",
+          "line": 177,
+          "function": "list_all_users",
+          "description": ""
+        },
+        {
+          "method": "DELETE",
+          "path": "/{user_id}/admin-delete",
+          "line": 371,
+          "function": "admin_delete_user",
+          "description": ""
+        }
+      ],
+      "imports": [
+        "import os",
+        "import logging",
+        "from datetime import datetime, timedelta",
+        "from typing import Optional, Dict, Any, List",
+        "from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File, Query",
+        "from pydantic import BaseModel, EmailStr, validator",
+        "import secrets"
+      ],
+      "description": "VokaFlow - Router de Usuarios Maneja gestión de usuarios, perfiles, preferencias y administración",
+      "tags": [],
+      "prefix": "",
+      "status": "active"
+    },
+    "vicky": {
+      "file_path": "src/backend/routers/vicky.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "voice": {
+      "file_path": "src/backend/routers/voice.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    },
+    "webhooks": {
+      "file_path": "src/backend/routers/webhooks.py",
+      "error": "'NoneType' object does not support item assignment",
+      "status": "error"
+    }
+  },
+  "imports_from_main": [
+    {
+      "module": "health",
+      "alias": "health_router",
+      "line": "from src.backend.routers.health import router as health_router"
+    },
+    {
+      "module": "vicky",
+      "alias": "vicky_router",
+      "line": "from src.backend.routers.vicky import router as vicky_router"
+    },
+    {
+      "module": "auth",
+      "alias": "auth_router",
+      "line": "from src.backend.routers.auth import router as auth_router"
+    },
+    {
+      "module": "users",
+      "alias": "users_router",
+      "line": "from src.backend.routers.users import router as users_router"
+    },
+    {
+      "module": "translate",
+      "alias": "translate_router",
+      "line": "from src.backend.routers.translate import router as translate_router"
+    },
+    {
+      "module": "tts",
+      "alias": "tts_router",
+      "line": "from src.backend.routers.tts import router as tts_router"
+    },
+    {
+      "module": "stt",
+      "alias": "stt_router",
+      "line": "from src.backend.routers.stt import router as stt_router"
+    },
+    {
+      "module": "voice",
+      "alias": "voice_router",
+      "line": "from src.backend.routers.voice import router as voice_router"
+    },
+    {
+      "module": "conversations",
+      "alias": "conversations_router",
+      "line": "from src.backend.routers.conversations import router as conversations_router"
+    },
+    {
+      "module": "system",
+      "alias": "system_router",
+      "line": "from src.backend.routers.system import router as system_router"
+    },
+    {
+      "module": "models",
+      "alias": "models_router",
+      "line": "from src.backend.routers.models import router as models_router"
+    },
+    {
+      "module": "files",
+      "alias": "files_router",
+      "line": "from src.backend.routers.files import router as files_router"
+    },
+    {
+      "module": "analytics",
+      "alias": "analytics_router",
+      "line": "from src.backend.routers.analytics import router as analytics_router"
+    },
+    {
+      "module": "notifications",
+      "alias": "notifications_router",
+      "line": "from src.backend.routers.notifications import router as notifications_router"
+    },
+    {
+      "module": "admin",
+      "alias": "admin_router",
+      "line": "from src.backend.routers.admin import router as admin_router"
+    },
+    {
+      "module": "api_keys",
+      "alias": "api_keys_router",
+      "line": "from src.backend.routers.api_keys import router as api_keys_router"
+    },
+    {
+      "module": "webhooks",
+      "alias": "webhooks_router",
+      "line": "from src.backend.routers.webhooks import router as webhooks_router"
+    },
+    {
+      "module": "monitoring",
+      "alias": "monitoring_router",
+      "line": "from src.backend.routers.monitoring import router as monitoring_router"
+    },
+    {
+      "module": "kinect_dashboard",
+      "alias": "kinect_dashboard_router",
+      "line": "from src.backend.routers.kinect_dashboard import router as kinect_dashboard_router"
+    },
+    {
+      "module": "health",
+      "alias": "health_router",
+      "line": "from src.backend.routers.health import router as health_router"
+    },
+    {
+      "module": "vicky",
+      "alias": "vicky_router",
+      "line": "from src.backend.routers.vicky import router as vicky_router"
+    },
+    {
+      "module": "auth",
+      "alias": "auth_router",
+      "line": "from src.backend.routers.auth import router as auth_router"
+    },
+    {
+      "module": "users",
+      "alias": "users_router",
+      "line": "from src.backend.routers.users import router as users_router"
+    },
+    {
+      "module": "translate",
+      "alias": "translate_router",
+      "line": "from src.backend.routers.translate import router as translate_router"
+    },
+    {
+      "module": "tts",
+      "alias": "tts_router",
+      "line": "from src.backend.routers.tts import router as tts_router"
+    },
+    {
+      "module": "stt",
+      "alias": "stt_router",
+      "line": "from src.backend.routers.stt import router as stt_router"
+    },
+    {
+      "module": "voice",
+      "alias": "voice_router",
+      "line": "from src.backend.routers.voice import router as voice_router"
+    },
+    {
+      "module": "conversations",
+      "alias": "conversations_router",
+      "line": "from src.backend.routers.conversations import router as conversations_router"
+    },
+    {
+      "module": "system",
+      "alias": "system_router",
+      "line": "from src.backend.routers.system import router as system_router"
+    },
+    {
+      "module": "models",
+      "alias": "models_router",
+      "line": "from src.backend.routers.models import router as models_router"
+    },
+    {
+      "module": "files",
+      "alias": "files_router",
+      "line": "from src.backend.routers.files import router as files_router"
+    },
+    {
+      "module": "analytics",
+      "alias": "analytics_router",
+      "line": "from src.backend.routers.analytics import router as analytics_router"
+    },
+    {
+      "module": "notifications",
+      "alias": "notifications_router",
+      "line": "from src.backend.routers.notifications import router as notifications_router"
+    },
+    {
+      "module": "admin",
+      "alias": "admin_router",
+      "line": "from src.backend.routers.admin import router as admin_router"
+    },
+    {
+      "module": "api_keys",
+      "alias": "api_keys_router",
+      "line": "from src.backend.routers.api_keys import router as api_keys_router"
+    },
+    {
+      "module": "webhooks",
+      "alias": "webhooks_router",
+      "line": "from src.backend.routers.webhooks import router as webhooks_router"
+    },
+    {
+      "module": "monitoring",
+      "alias": "monitoring_router",
+      "line": "from src.backend.routers.monitoring import router as monitoring_router"
+    },
+    {
+      "module": "kinect_dashboard",
+      "alias": "kinect_dashboard_router",
+      "line": "from src.backend.routers.kinect_dashboard import router as kinect_dashboard_router"
+    },
+    {
+      "module": "health",
+      "alias": "health_router",
+      "line": "from src.backend.routers.health import router as health_router"
+    },
+    {
+      "module": "vicky",
+      "alias": "vicky_router_new",
+      "line": "from src.backend.routers.vicky import router as vicky_router_new"
+    },
+    {
+      "module": "health",
+      "alias": "health_router",
+      "line": "from src.backend.routers.health import router as health_router"
+    },
+    {
+      "module": "vicky",
+      "alias": "vicky_router_new",
+      "line": "from src.backend.routers.vicky import router as vicky_router_new"
+    }
+  ],
+  "registrations_from_main": [
+    "app.include_router(auth_router, prefix=settings.API_PREFIX)",
+    "app.include_router(users_router, prefix=settings.API_PREFIX)",
+    "app.include_router(translate_router, prefix=f\"{settings.API_PREFIX}/translate\")",
+    "# app.include_router(vicky_router, prefix=f\"{settings.API_PREFIX}/vicky\")",
+    "app.include_router(tts_router, prefix=f\"{settings.API_PREFIX}/tts\")",
+    "app.include_router(stt_router, prefix=f\"{settings.API_PREFIX}/stt\")",
+    "app.include_router(voice_router, prefix=f\"{settings.API_PREFIX}/voice\")",
+    "app.include_router(conversation_router, prefix=f\"{settings.API_PREFIX}/conversations\")",
+    "app.include_router(system_router, prefix=f\"{settings.API_PREFIX}/system\")",
+    "app.include_router(health_router, prefix=f\"{settings.API_PREFIX}/health\")",
+    "app.include_router(health_router, prefix=f\"{settings.API_PREFIX}/health\", tags=[\"Health\"])",
+    "app.include_router(vicky_router, prefix=f\"{settings.API_PREFIX}/vicky\", tags=[\"Vicky\"])",
+    "app.include_router(auth_router, prefix=f\"{settings.API_PREFIX}/auth\", tags=[\"Auth\"])",
+    "app.include_router(users_router, prefix=f\"{settings.API_PREFIX}/users\", tags=[\"Users\"])",
+    "app.include_router(translate_router, prefix=f\"{settings.API_PREFIX}/translate\", tags=[\"Translate\"])",
+    "app.include_router(tts_router, prefix=f\"{settings.API_PREFIX}/tts\", tags=[\"TTS\"])",
+    "app.include_router(stt_router, prefix=f\"{settings.API_PREFIX}/stt\", tags=[\"STT\"])",
+    "app.include_router(voice_router, prefix=f\"{settings.API_PREFIX}/voice\", tags=[\"Voice\"])",
+    "app.include_router(conversations_router, prefix=f\"{settings.API_PREFIX}/conversations\", tags=[\"Conversations\"])",
+    "app.include_router(system_router, prefix=f\"{settings.API_PREFIX}/system\", tags=[\"System\"])",
+    "app.include_router(models_router, prefix=f\"{settings.API_PREFIX}/models\", tags=[\"Models\"])",
+    "app.include_router(files_router, prefix=f\"{settings.API_PREFIX}/files\", tags=[\"Files\"])",
+    "app.include_router(analytics_router, prefix=f\"{settings.API_PREFIX}/analytics\", tags=[\"Analytics\"])",
+    "app.include_router(notifications_router, prefix=f\"{settings.API_PREFIX}/notifications\", tags=[\"Notifications\"])",
+    "app.include_router(admin_router, prefix=f\"{settings.API_PREFIX}/admin\", tags=[\"Admin\"])",
+    "app.include_router(api_keys_router, prefix=f\"{settings.API_PREFIX}/api-keys\", tags=[\"API Keys\"])",
+    "app.include_router(webhooks_router, prefix=f\"{settings.API_PREFIX}/webhooks\", tags=[\"Webhooks\"])",
+    "app.include_router(monitoring_router, prefix=f\"{settings.API_PREFIX}/monitoring\", tags=[\"Monitoring\"])",
+    "app.include_router(kinect_dashboard_router, prefix=f\"{settings.API_PREFIX}/kinect\", tags=[\"Kinect Dashboard\"])",
+    "app.include_router(health_router, prefix=f\"{settings.API_PREFIX}/health\", tags=[\"Health\"])",
+    "app.include_router(vicky_router, prefix=f\"{settings.API_PREFIX}/vicky\", tags=[\"Vicky\"])",
+    "app.include_router(auth_router, prefix=f\"{settings.API_PREFIX}/auth\", tags=[\"Auth\"])",
+    "app.include_router(users_router, prefix=f\"{settings.API_PREFIX}/users\", tags=[\"Users\"])",
+    "app.include_router(translate_router, prefix=f\"{settings.API_PREFIX}/translate\", tags=[\"Translate\"])",
+    "app.include_router(tts_router, prefix=f\"{settings.API_PREFIX}/tts\", tags=[\"TTS\"])",
+    "app.include_router(stt_router, prefix=f\"{settings.API_PREFIX}/stt\", tags=[\"STT\"])",
+    "app.include_router(voice_router, prefix=f\"{settings.API_PREFIX}/voice\", tags=[\"Voice\"])",
+    "app.include_router(conversations_router, prefix=f\"{settings.API_PREFIX}/conversations\", tags=[\"Conversations\"])",
+    "app.include_router(system_router, prefix=f\"{settings.API_PREFIX}/system\", tags=[\"System\"])",
+    "app.include_router(models_router, prefix=f\"{settings.API_PREFIX}/models\", tags=[\"Models\"])",
+    "app.include_router(files_router, prefix=f\"{settings.API_PREFIX}/files\", tags=[\"Files\"])",
+    "app.include_router(analytics_router, prefix=f\"{settings.API_PREFIX}/analytics\", tags=[\"Analytics\"])",
+    "app.include_router(notifications_router, prefix=f\"{settings.API_PREFIX}/notifications\", tags=[\"Notifications\"])",
+    "app.include_router(admin_router, prefix=f\"{settings.API_PREFIX}/admin\", tags=[\"Admin\"])",
+    "app.include_router(api_keys_router, prefix=f\"{settings.API_PREFIX}/api-keys\", tags=[\"API Keys\"])",
+    "app.include_router(webhooks_router, prefix=f\"{settings.API_PREFIX}/webhooks\", tags=[\"Webhooks\"])",
+    "app.include_router(monitoring_router, prefix=f\"{settings.API_PREFIX}/monitoring\", tags=[\"Monitoring\"])",
+    "app.include_router(kinect_dashboard_router, prefix=f\"{settings.API_PREFIX}/kinect\", tags=[\"Kinect Dashboard\"])",
+    "app.include_router(health_router, prefix=f\"{settings.API_PREFIX}/health\")",
+    "app.include_router(health_router, prefix=f\"{settings.API_PREFIX}/health\")"
+  ],
+  "missing_imports": [
+    "dashboard",
+    "high_scale_tasks",
+    "translations_dashboard",
+    "tasks",
+    "auth_robust",
+    "kinect"
+  ],
+  "missing_files": []
+}

@@ -4,10 +4,10 @@ credentials-file: /home/dw7/.cloudflared/fceaf237-1818-44d7-9a29-f2181e5abe90.js
 # Configuración de registro y métricas
 loglevel: info
 
-# Configuración de túnel
+# Configuración de túnel - CORREGIDA para apuntar al puerto correcto
 ingress:
   - hostname: backend.vokaflow.com
-    service: http://localhost:5000
-  - hostname: api_backend.vokaflow.com
-    service: http://localhost:5000
+    service: http://localhost:80
+  - hostname: api.vokaflow.com
+    service: http://localhost:80
   - service: http_status:404 

@@ -1,0 +1,64 @@
+{
+  "redis_cluster": {
+    "nodes": [
+      "redis://127.0.0.1:7000",
+      "redis://127.0.0.1:7001",
+      "redis://127.0.0.1:7002",
+      "redis://127.0.0.1:7003",
+      "redis://127.0.0.1:7004",
+      "redis://127.0.0.1:7005"
+    ],
+    "max_connections_per_node": 100,
+    "retry_on_timeout": true,
+    "health_check_interval": 30
+  },
+  "worker_pools": {
+    "cpu_intensive": {
+      "max_workers": "auto",
+      "pool_type": "ProcessPool"
+    },
+    "io_intensive": {
+      "max_workers": "auto * 2",
+      "pool_type": "ThreadPool"
+    },
+    "memory_intensive": {
+      "max_workers": "auto / 2",
+      "pool_type": "ThreadPool"
+    },
+    "network_intensive": {
+      "max_workers": "auto * 4",
+      "pool_type": "ThreadPool"
+    },
+    "general_purpose": {
+      "max_workers": "auto",
+      "pool_type": "ThreadPool"
+    }
+  },
+  "rate_limiting": {
+    "vicky": 50000,
+    "audio": 20000,
+    "database": 100000,
+    "notifications": 1000000,
+    "analytics": 30000,
+    "ml": 10000,
+    "system": 5000,
+    "general": 10000
+  },
+  "auto_scaling": {
+    "enabled": true,
+    "scale_up_threshold": 1000,
+    "scale_down_threshold": 100,
+    "cpu_threshold_up": 80,
+    "cpu_threshold_down": 30,
+    "evaluation_interval": 30
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics_interval": 1,
+    "log_interval": 10
+  },
+  "partitioning": {
+    "partition_count": 16,
+    "hash_algorithm": "md5"
+  }
+}

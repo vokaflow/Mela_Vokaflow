@@ -1,0 +1,23 @@
+*2
+$6
+SELECT
+$1
+0
+*4
+$4
+ZADD
+$39
+vokaflow:queue:HIGH:memory_intensive:10
+$19
+-1746652769.1177115
+$367
+{"id": "a2e3187a-4152-4729-8757-9c9ee8ba86f1", "name": "intensive_task_3", "func_name": "src.backend.routers.high_scale_tasks.<lambda>", "args": ["Tarea intensiva 3 para probar auto-scaling", "qwen_7b"], "kwargs": {}, "priority": 2, "worker_type": "memory_intensive", "max_retries": 3, "timeout": null, "category": "vicky", "created_at": "2025-05-31T00:52:49.117665"}
+*4
+$4
+ZADD
+$39
+vokaflow:queue:HIGH:memory_intensive:14
+$18
+-1746652769.119626
+$369
+{"id": "93ddd8e6-3e59-4212-a085-39df0398396f", "name": "intensive_task_14", "func_name": "src.backend.routers.high_scale_tasks.<lambda>", "args": ["Tarea intensiva 14 para probar auto-scaling", "qwen_7b"], "kwargs": {}, "priority": 2, "worker_type": "memory_intensive", "max_retries": 3, "timeout": null, "category": "vicky", "created_at": "2025-05-31T00:52:49.119591"}

@@ -1,7 +1,48 @@
-# Frontend directory (separate repository)
-Frontend_Vokaflow/
+# VokaFlow - .gitignore
+# Archivos y directorios que NO deben subirse a GitHub
 
-# Python
+# ===== ENTORNOS VIRTUALES =====
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.env
+
+# ===== ARCHIVOS DE CONFIGURACIÓN SENSIBLES =====
+.env
+.env.local
+.env.production
+.env.development
+config.ini
+secrets.json
+*.key
+*.pem
+
+# ===== BASE DE DATOS =====
+*.db
+*.sqlite
+*.sqlite3
+vokaflow.db*
+database.db*
+
+# ===== LOGS =====
+logs/
+*.log
+log/
+/var/log/vokaflow/
+
+# ===== UPLOADS Y ARCHIVOS TEMPORALES =====
+uploads/
+audio/
+models/
+temp/
+tmp/
+cache/
+.cache/
+
+# ===== PYTHON =====
 __pycache__/
 *.py[cod]
 *$py.class
@@ -24,76 +65,74 @@ wheels/
 *.egg
 MANIFEST
 
-# Virtual environment
-venv/
-env/
-ENV/
-venv.bak/
-env.bak/
+# ===== JUPYTER NOTEBOOK =====
+.ipynb_checkpoints
 
-# Environment variables
-.env
-.env.local
-.env.*.local
-.env.backup
-.env.complete
-.env.production
-*.env.bak
+# ===== TESTING =====
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Logs
-*.log
-logs/
-backend.log
-
-# Temporary files
-temp/
-tmp/
-tmp_backend/
-*.tmp
-*.temp
-
-# Uploads and media
-uploads/
-audio/
-thumbnails/
-static/uploads/
-
-# SSL certificates
-ssl/
-*.pem
-*.key
-*.crt
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDE
+# ===== IDEs =====
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.DS_Store
 
-# Node modules (if any)
+# ===== SISTEMA =====
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ===== REDIS DUMPS =====
+dump.rdb
+appendonly.aof
+
+# ===== BACKUPS =====
+*.backup
+*.bak
+*.backup.*
+src/main.py.backup.*
+
+# ===== ARCHIVOS DEL SISTEMA LINUX =====
+*.pid
+*.sock
+
+# ===== MODELOS DE ML/AI =====
+models/*.bin
+models/*.safetensors
+models/*.gguf
+models/*.pt
+models/*.pth
+*.model
+
+# ===== ARCHIVOS DE CONFIGURACIÓN LOCAL =====
+local_config.py
+local_settings.py
+
+# ===== CERTIFICADOS SSL =====
+*.crt
+*.cert
+*.ca-bundle
+
+# ===== ARCHIVOS DE SERVICIOS TEMPORALES =====
+/tmp/
+
+# ===== NPM (si hay frontend) =====
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Backup files
-*.backup
-*.bak
-
-# Cache
-.cache/ 
+# ===== DOCUMENTACIÓN GENERADA =====
+docs/_build/
+site/ 

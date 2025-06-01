@@ -1,717 +1,542 @@
-
-import time
-_last_log_time = 0
-_log_interval = 5  # segundos
-
-def rate_limited_log(message, level="info"):
-    global _last_log_time
-    current_time = time.time()
-    if current_time - _last_log_time > _log_interval:
-        getattr(logger, level)(message)
-        _last_log_time = current_time
-
 #!/usr/bin/env python3
 """
-VokaFlow - Router de Tareas de Alta Escala
-API optimizada para millones de solicitudes por segundo
+Router para High Scale Task Manager - VokaFlow
+Gestión de tareas de alta escala con Redis distribuido
 """
 
 import asyncio
 import logging
-from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Depends, Query, status, BackgroundTasks
-from pydantic import BaseModel, Field
 from datetime import datetime
-import json
+from typing import Dict, Any, List, Optional, Union
+from enum import Enum
 
-from ..core.high_scale_task_manager import (
-    high_scale_task_manager,
+from fastapi import APIRouter, HTTPException, Depends, Query, Path, Body, status
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field, validator
+
+# Importar el High Scale Task Manager
+from src.backend.core.high_scale_task_manager import (
+    HighScaleTaskManager,
     TaskPriority,
     WorkerType,
     TaskStatus,
     submit_high_scale_task,
     get_scale_metrics,
     initialize_high_scale_system,
-    shutdown_high_scale_system
+    shutdown_high_scale_system,
+    high_scale_task_manager
 )
 
-logger = logging.getLogger("vokaflow.high_scale_tasks")
+logger = logging.getLogger("vokaflow.routers.high_scale_tasks")
 
-# Router optimizado
-router = APIRouter(tags=["High Scale Tasks"])
+# Crear router
+router = APIRouter(
+    prefix="/high-scale-tasks",
+    tags=["High Scale Tasks"],
+    responses={404: {"description": "Not found"}}
+)
 
-# Modelos Pydantic optimizados
-class HighScaleTaskRequest(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
-    function_name: str = Field(..., min_length=1, max_length=50)
-    args: List[Any] = Field(default_factory=list, max_items=20)
-    kwargs: Dict[str, Any] = Field(default_factory=dict, max_properties=20)
-    priority: str = Field("NORMAL", pattern="^(EMERGENCY|CRITICAL|HIGH|NORMAL|LOW|BATCH|BACKGROUND|MAINTENANCE)$")
-    worker_type: str = Field("GENERAL_PURPOSE", pattern="^(CPU_INTENSIVE|IO_INTENSIVE|MEMORY_INTENSIVE|NETWORK_INTENSIVE|GENERAL_PURPOSE)$")
-    category: str = Field("general", min_length=1, max_length=50)
-    max_retries: int = Field(3, ge=0, le=10)
-    timeout: Optional[float] = Field(None, gt=0, le=300)
-    rate_limit: Optional[int] = Field(None, gt=0, le=100000)
-    estimated_duration: float = Field(1.0, gt=0, le=3600)
-    memory_requirement: int = Field(64, ge=1, le=8192)
-    cpu_requirement: float = Field(0.1, ge=0.01, le=8.0)
+# Modelos Pydantic para el API
 
-class BatchTaskRequest(BaseModel):
-    tasks: List[HighScaleTaskRequest] = Field(..., min_items=1, max_items=1000)
-    batch_priority: str = Field("NORMAL")
-    execution_mode: str = Field("parallel", pattern="^(parallel|sequential|adaptive)$")
+class TaskSubmissionRequest(BaseModel):
+    """Solicitud para enviar una tarea de alta escala"""
+    function_name: str = Field(..., description="Nombre de la función a ejecutar (e.g., 'math.sqrt')")
+    args: List[Any] = Field(default=[], description="Argumentos posicionales para la función")
+    kwargs: Dict[str, Any] = Field(default={}, description="Argumentos con nombre para la función")
+    priority: str = Field(default="NORMAL", description="Prioridad de la tarea")
+    worker_type: str = Field(default="GENERAL_PURPOSE", description="Tipo de worker especializado")
+    name: Optional[str] = Field(None, description="Nombre personalizado para la tarea")
+    category: str = Field(default="general", description="Categoría de la tarea")
+    max_retries: int = Field(default=3, ge=0, le=10, description="Número máximo de reintentos")
+    timeout: Optional[float] = Field(None, ge=1, le=300, description="Timeout en segundos")
+    
+    @validator('priority')
+    def validate_priority(cls, v):
+        try:
+            TaskPriority[v.upper()]
+            return v.upper()
+        except KeyError:
+            valid_priorities = [p.name for p in TaskPriority]
+            raise ValueError(f"Prioridad inválida. Opciones válidas: {valid_priorities}")
+    
+    @validator('worker_type')
+    def validate_worker_type(cls, v):
+        try:
+            WorkerType[v.upper()]
+            return v.upper()
+        except KeyError:
+            valid_types = [wt.name for wt in WorkerType]
+            raise ValueError(f"Tipo de worker inválido. Opciones válidas: {valid_types}")
 
-class TaskResponse(BaseModel):
+class TaskSubmissionResponse(BaseModel):
+    """Respuesta al enviar una tarea"""
     task_id: str
-    name: str
-    status: str
-    partition: int
-    redis_node: str
-    estimated_completion: Optional[datetime] = None
-    queue_position: Optional[int] = None
+    status: str = "submitted"
+    message: str
+    estimated_completion: Optional[str] = None
 
-class ScaleMetricsResponse(BaseModel):
-    throughput_per_second: float
-    total_pending_tasks: int
+class TaskMetricsResponse(BaseModel):
+    """Respuesta con métricas del sistema"""
+    status: str
+    total_tasks: int
+    completed_tasks: int
+    failed_tasks: int
+    pending_tasks: int
     active_workers: int
-    redis_nodes: int
-    partitions: int
-    system_resources: Dict[str, float]
-    worker_pools: Dict[str, Dict[str, Any]]
-    queue_distribution: Dict[str, int]
+    throughput_per_second: float
+    system_resources: Dict[str, Any]
+    worker_pools: Dict[str, Any]
+    redis_status: Dict[str, Any]
+    recent_tasks: List[Dict[str, Any]]
     timestamp: float
 
-class PriorityConfigResponse(BaseModel):
-    priority_levels: Dict[str, Dict[str, Any]]
-    worker_types: Dict[str, Dict[str, Any]]
-    rate_limits: Dict[str, int]
-    auto_scaling_enabled: bool
-    monitoring_enabled: bool
+class SystemControlRequest(BaseModel):
+    """Solicitud de control del sistema"""
+    action: str = Field(..., description="Acción a realizar: initialize, shutdown, restart")
+    force: bool = Field(default=False, description="Forzar la operación")
 
-# Funciones auxiliares optimizadas
-REGISTERED_HIGH_SCALE_FUNCTIONS = {
-    # Funciones de Vicky AI
-    "vicky_inference": lambda prompt, model="qwen_7b": f"Vicky AI procesando: {prompt} con {model}",
-    "vicky_embedding": lambda text: f"Embedding generado para: {text[:50]}...",
-    "vicky_classification": lambda text, categories: f"Clasificación: {text[:30]} -> {categories[0] if categories else 'unknown'}",
-    
-    # Procesamiento de audio de alta escala
-    "audio_transcription": lambda audio_path: f"Transcripción de audio: {audio_path}",
-    "audio_analysis": lambda audio_path, features: f"Análisis de audio: {features}",
-    "voice_synthesis": lambda text, voice_id: f"Síntesis de voz: {text[:50]}...",
-    
-    # Operaciones de base de datos
-    "bulk_insert": lambda table, data: f"Inserción masiva en {table}: {len(data) if isinstance(data, list) else 1} registros",
-    "data_aggregation": lambda query, timeframe: f"Agregación de datos: {query} ({timeframe})",
-    "cache_refresh": lambda cache_key: f"Cache actualizado: {cache_key}",
-    
-    # Notificaciones masivas
-    "send_bulk_notifications": lambda users, message: f"Notificaciones enviadas a {len(users) if isinstance(users, list) else 1} usuarios",
-    "push_notification": lambda user_id, payload: f"Push enviado a {user_id}",
-    "email_batch": lambda recipients, template: f"Emails enviados: {template} a {len(recipients) if isinstance(recipients, list) else 1} destinatarios",
-    
-    # Procesamiento de archivos
-    "file_processing": lambda file_path, operation: f"Procesamiento de archivo: {operation} en {file_path}",
-    "image_optimization": lambda image_path, quality: f"Optimización de imagen: {image_path} (calidad: {quality})",
-    "video_transcoding": lambda video_path, format: f"Transcodificación: {video_path} -> {format}",
-    
-    # Analytics y métricas
-    "metrics_calculation": lambda metric_type, period: f"Cálculo de métricas: {metric_type} ({period})",
-    "report_generation": lambda report_type, data_range: f"Generación de reporte: {report_type} ({data_range})",
-    "data_backup": lambda source, destination: f"Backup: {source} -> {destination}",
-    
-    # Machine Learning
-    "model_training": lambda model_name, dataset: f"Entrenamiento de modelo: {model_name} con {dataset}",
-    "batch_prediction": lambda model, input_data: f"Predicciones en lote: {model} ({len(input_data) if isinstance(input_data, list) else 1} elementos)",
-    "feature_extraction": lambda data, features: f"Extracción de características: {features}",
-    
-    # Tareas de sistema
-    "system_health_check": lambda component: f"Verificación de salud: {component}",
-    "log_analysis": lambda log_file, pattern: f"Análisis de logs: {pattern} en {log_file}",
-    "cleanup_temp_files": lambda directory: f"Limpieza de archivos temporales: {directory}",
-    
-    # Comunicaciones en tiempo real
-    "websocket_broadcast": lambda channel, message: f"Broadcast WebSocket: {channel}",
-    "realtime_sync": lambda user_id, data: f"Sincronización en tiempo real: {user_id}",
-    "live_translation": lambda text, source_lang, target_lang: f"Traducción en vivo: {source_lang} -> {target_lang}"
-}
+class DLQTaskResponse(BaseModel):
+    """Respuesta con tareas de Dead Letter Queue"""
+    total_tasks: int
+    tasks: List[Dict[str, Any]]
+    worker_types: List[str]
 
-@router.on_event("startup")
-async def startup_high_scale_system():
-    """Inicializar sistema de alta escala al arrancar"""
+# Funciones de utilidad
+
+def resolve_function_from_name(func_name: str):
+    """Resolver función desde nombre de string"""
     try:
-        await initialize_high_scale_system()
-        logger.info("🚀 Sistema de alta escala inicializado")
+        if '.' in func_name:
+            module_name, function_name = func_name.rsplit('.', 1)
+            import importlib
+            module = importlib.import_module(module_name)
+            return getattr(module, function_name)
+        else:
+            # Funciones built-in
+            import builtins
+            if hasattr(builtins, func_name):
+                return getattr(builtins, func_name)
+            else:
+                # Funciones comunes para demostración
+                demo_functions = {
+                    'demo_cpu_task': lambda x: sum(i*i for i in range(x)),
+                    'demo_io_task': lambda: "IO task completed",
+                    'demo_network_task': lambda url: f"Network request to {url}",
+                    'demo_memory_task': lambda size: [0] * size,
+                    'demo_error_task': lambda: 1/0,  # Para probar manejo de errores
+                }
+                if func_name in demo_functions:
+                    return demo_functions[func_name]
+        
+        raise ImportError(f"Función no encontrada: {func_name}")
     except Exception as e:
-        logger.error(f"❌ Error inicializando sistema de alta escala: {e}")
+        logger.error(f"Error resolviendo función {func_name}: {e}")
+        raise
 
-@router.on_event("shutdown")
-async def shutdown_high_scale_system():
-    """Shutdown del sistema de alta escala"""
-    try:
-        await shutdown_high_scale_system()
-        # if not getattr(self, '_shutdown_logged', False):
-        logger.info("🛑 Sistema de alta escala finalizado")
-        self._shutdown_logged = True  # Comentado para evitar spam
-    except Exception as e:
-        logger.error(f"❌ Error finalizando sistema de alta escala: {e}")
+# Endpoints del API
 
-@router.post("/submit", response_model=TaskResponse)
-async def submit_high_performance_task(task_request: HighScaleTaskRequest):
+@router.post("/submit", response_model=TaskSubmissionResponse)
+async def submit_task(request: TaskSubmissionRequest):
     """
-    🚀 Enviar tarea optimizada para alta escala
+    Enviar una tarea al sistema de alta escala
     
-    Optimizado para millones de solicitudes por segundo:
-    - Rate limiting automático
-    - Distribución por particiones
-    - Workers especializados
-    - Prioridades granulares
+    Permite enviar tareas con diferentes prioridades, tipos de worker y configuraciones.
     """
     try:
-        # Validar función
-        if task_request.function_name not in REGISTERED_HIGH_SCALE_FUNCTIONS:
-            available_functions = list(REGISTERED_HIGH_SCALE_FUNCTIONS.keys())
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Función '{task_request.function_name}' no registrada. "
-                       f"Disponibles: {available_functions[:10]}..."  # Mostrar solo las primeras 10
-            )
+        # Resolver función
+        func = resolve_function_from_name(request.function_name)
         
         # Convertir enums
-        try:
-            priority = TaskPriority[task_request.priority]
-            worker_type = WorkerType[task_request.worker_type]
-        except KeyError as e:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Valor inválido: {e}"
-            )
+        priority = TaskPriority[request.priority]
+        worker_type = WorkerType[request.worker_type]
         
-        # Obtener función
-        func = REGISTERED_HIGH_SCALE_FUNCTIONS[task_request.function_name]
-        
-        # Enviar tarea con parámetros optimizados
+        # Enviar tarea
         task_id = await submit_high_scale_task(
             func=func,
-            args=tuple(task_request.args),
-            kwargs=task_request.kwargs,
+            args=tuple(request.args),
+            kwargs=request.kwargs,
             priority=priority,
             worker_type=worker_type,
-            name=task_request.name,
-            category=task_request.category,
-            max_retries=task_request.max_retries,
-            timeout=task_request.timeout,
-            rate_limit=task_request.rate_limit,
-            estimated_duration=task_request.estimated_duration,
-            memory_requirement=task_request.memory_requirement,
-            cpu_requirement=task_request.cpu_requirement
+            name=request.name,
+            category=request.category,
+            max_retries=request.max_retries,
+            timeout=request.timeout
         )
         
-        # Calcular información de partición y posición
-        import hashlib
-        partition = int(hashlib.md5(task_id.encode()).hexdigest(), 16) % 16
-        redis_node = f"node_{partition % 3}"  # Asumiendo 3 nodos Redis
+        # Estimar tiempo de completación (básico)
+        estimated_completion = None
+        if request.timeout:
+            from datetime import datetime, timedelta
+            estimated_completion = (datetime.now() + timedelta(seconds=request.timeout)).isoformat()
         
-        return TaskResponse(
+        logger.info(f"🚀 Tarea enviada: {request.function_name} -> {task_id}")
+        
+        return TaskSubmissionResponse(
             task_id=task_id,
-            name=task_request.name,
-            status="queued",
-            partition=partition,
-            redis_node=redis_node,
-            estimated_completion=None,  # Se calcularía en producción
-            queue_position=None  # Se calcularía en producción
+            status="submitted",
+            message=f"Tarea {request.function_name} enviada exitosamente",
+            estimated_completion=estimated_completion
         )
         
-    except HTTPException:
-        raise
+    except ValueError as e:
+        logger.error(f"Error de validación: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except ImportError as e:
+        logger.error(f"Error importando función: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Función no encontrada: {request.function_name}"
+        )
     except Exception as e:
-        logger.error(f"Error enviando tarea de alta escala: {e}")
+        logger.error(f"Error enviando tarea: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error interno: {str(e)}"
         )
 
-@router.post("/batch", response_model=Dict[str, Any])
-async def submit_batch_high_scale_tasks(batch_request: BatchTaskRequest):
+@router.get("/metrics", response_model=TaskMetricsResponse)
+async def get_system_metrics():
     """
-    📦 Enviar lote de tareas optimizado para alta escala
+    Obtener métricas completas del sistema de alta escala
     
-    Características:
-    - Procesamiento paralelo de envíos
-    - Validación en lote
-    - Distribución inteligente
-    - Manejo de errores granular
-    """
-    try:
-        if len(batch_request.tasks) > 1000:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Máximo 1000 tareas por lote"
-            )
-        
-        submitted_tasks = []
-        errors = []
-        
-        # Procesar tareas en paralelo (grupos de 100)
-        batch_size = 100
-        for i in range(0, len(batch_request.tasks), batch_size):
-            batch_chunk = batch_request.tasks[i:i + batch_size]
-            
-            # Crear tareas async para cada chunk
-            async_tasks = []
-            for j, task_request in enumerate(batch_chunk):
-                try:
-                    # Validar función
-                    if task_request.function_name not in REGISTERED_HIGH_SCALE_FUNCTIONS:
-                        errors.append({
-                            "index": i + j,
-                            "error": f"Función '{task_request.function_name}' no registrada"
-                        })
-                        continue
-                    
-                    # Convertir enums
-                    priority = TaskPriority[task_request.priority]
-                    worker_type = WorkerType[task_request.worker_type]
-                    func = REGISTERED_HIGH_SCALE_FUNCTIONS[task_request.function_name]
-                    
-                    # Crear tarea async
-                    task_coroutine = submit_high_scale_task(
-                        func=func,
-                        args=tuple(task_request.args),
-                        kwargs=task_request.kwargs,
-                        priority=priority,
-                        worker_type=worker_type,
-                        name=task_request.name,
-                        category=task_request.category,
-                        max_retries=task_request.max_retries,
-                        timeout=task_request.timeout
-                    )
-                    async_tasks.append((i + j, task_coroutine, task_request.name))
-                    
-                except Exception as e:
-                    errors.append({
-                        "index": i + j,
-                        "error": str(e)
-                    })
-            
-            # Ejecutar chunk en paralelo
-            if async_tasks:
-                chunk_results = await asyncio.gather(
-                    *[task_coro for _, task_coro, _ in async_tasks],
-                    return_exceptions=True
-                )
-                
-                for (index, _, name), result in zip(async_tasks, chunk_results):
-                    if isinstance(result, Exception):
-                        errors.append({
-                            "index": index,
-                            "error": str(result)
-                        })
-                    else:
-                        submitted_tasks.append({
-                            "index": index,
-                            "task_id": result,
-                            "name": name,
-                            "status": "submitted"
-                        })
-        
-        return {
-            "submitted_tasks": submitted_tasks,
-            "total_submitted": len(submitted_tasks),
-            "errors": errors,
-            "total_errors": len(errors),
-            "execution_mode": batch_request.execution_mode,
-            "batch_priority": batch_request.batch_priority,
-            "processing_time": "optimized_parallel"
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error enviando lote de tareas de alta escala: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error procesando lote: {str(e)}"
-        )
-
-@router.get("/metrics", response_model=ScaleMetricsResponse)
-async def get_high_scale_metrics():
-    """
-    📊 Obtener métricas del sistema de alta escala
-    
-    Métricas optimizadas para monitoreo en tiempo real:
-    - Throughput por segundo
-    - Distribución de colas
-    - Recursos del sistema
-    - Estado de workers
+    Incluye información sobre tareas, workers, recursos del sistema y estado de Redis.
     """
     try:
         metrics = await get_scale_metrics()
         
-        # Procesar métricas para respuesta optimizada
-        queue_distribution = {}
-        if "queue_lengths" in metrics:
-            # Agrupar por prioridad
-            for queue_key, length in metrics["queue_lengths"].items():
-                priority = queue_key.split(":")[2] if ":" in queue_key else "unknown"
-                queue_distribution[priority] = queue_distribution.get(priority, 0) + length
-        
-        return ScaleMetricsResponse(
-            throughput_per_second=metrics.get("throughput_per_second", 0.0),
-            total_pending_tasks=metrics.get("total_pending_tasks", 0),
+        # Estructurar respuesta
+        response = TaskMetricsResponse(
+            status=metrics.get("status", "unknown"),
+            total_tasks=metrics.get("total_tasks", 0),
+            completed_tasks=metrics.get("completed_tasks", 0),
+            failed_tasks=metrics.get("failed_tasks", 0),
+            pending_tasks=metrics.get("total_pending_tasks", 0),
             active_workers=metrics.get("active_workers", 0),
-            redis_nodes=metrics.get("redis_nodes", 0),
-            partitions=metrics.get("partitions", 0),
+            throughput_per_second=metrics.get("throughput_per_second", 0.0),
             system_resources=metrics.get("system_resources", {}),
             worker_pools=metrics.get("worker_pools", {}),
-            queue_distribution=queue_distribution,
-            timestamp=metrics.get("timestamp", 0.0)
+            redis_status={
+                "nodes": metrics.get("redis_nodes", 0),
+                "partitions": metrics.get("partitions", 0),
+                "memory_mode": metrics.get("memory_mode", {})
+            },
+            recent_tasks=metrics.get("recent_tasks", []),
+            timestamp=metrics.get("timestamp", 0)
         )
         
+        return response
+        
     except Exception as e:
-        logger.error(f"Error obteniendo métricas de alta escala: {e}")
+        logger.error(f"Error obteniendo métricas: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error obteniendo métricas: {str(e)}"
         )
 
-@router.get("/priorities", response_model=PriorityConfigResponse)
-async def get_priority_configuration():
+@router.get("/status")
+async def get_system_status():
     """
-    ⚙️ Obtener configuración de prioridades y workers
-    
-    Información sobre:
-    - Niveles de prioridad disponibles
-    - Tipos de workers especializados
-    - Rate limits por categoría
-    - Configuración de auto-scaling
+    Obtener estado general del sistema de alta escala
     """
     try:
-        priority_levels = {
-            priority.name: {
-                "value": priority.value,
-                "description": _get_priority_description(priority),
-                "typical_use_cases": _get_priority_use_cases(priority),
-                "sla_target": _get_priority_sla(priority)
+        global high_scale_task_manager
+        
+        if high_scale_task_manager is None:
+            return {
+                "status": "not_initialized",
+                "message": "Sistema de alta escala no inicializado",
+                "initialized": False,
+                "recommendations": [
+                    "Llama al endpoint POST /initialize para inicializar el sistema",
+                    "Verifica que Redis esté funcionando",
+                    "Revisa los logs para más detalles"
+                ]
             }
-            for priority in TaskPriority
-        }
         
-        worker_types = {
-            worker_type.value: {
-                "description": _get_worker_type_description(worker_type),
-                "optimal_for": _get_worker_type_optimal_for(worker_type),
-                "max_workers": high_scale_task_manager.max_workers_per_type.get(worker_type, 0),
-                "pool_type": "ProcessPool" if worker_type == WorkerType.CPU_INTENSIVE else "ThreadPool"
-            }
-            for worker_type in WorkerType
-        }
-        
-        # Rate limits por categoría (valores por defecto)
-        rate_limits = {
-            "vicky": 50000,      # 50K req/s para Vicky AI
-            "audio": 20000,      # 20K req/s para procesamiento de audio
-            "database": 100000,  # 100K req/s para operaciones de BD
-            "notifications": 1000000,  # 1M req/s para notificaciones
-            "analytics": 30000,  # 30K req/s para analytics
-            "ml": 10000,         # 10K req/s para ML
-            "system": 5000,      # 5K req/s para tareas de sistema
-            "general": 10000     # 10K req/s por defecto
-        }
-        
-        return PriorityConfigResponse(
-            priority_levels=priority_levels,
-            worker_types=worker_types,
-            rate_limits=rate_limits,
-            auto_scaling_enabled=high_scale_task_manager.enable_auto_scaling,
-            monitoring_enabled=high_scale_task_manager.enable_monitoring
-        )
-        
-    except Exception as e:
-        logger.error(f"Error obteniendo configuración: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error obteniendo configuración: {str(e)}"
-        )
-
-@router.get("/functions", response_model=Dict[str, Any])
-async def get_high_scale_functions():
-    """
-    🔧 Listar funciones disponibles para alta escala
-    
-    Funciones optimizadas por categoría:
-    - Vicky AI
-    - Procesamiento de audio
-    - Base de datos
-    - Notificaciones
-    - Machine Learning
-    - Sistema
-    """
-    try:
-        functions_by_category = {
-            "vicky_ai": [func for func in REGISTERED_HIGH_SCALE_FUNCTIONS.keys() if func.startswith("vicky_")],
-            "audio": [func for func in REGISTERED_HIGH_SCALE_FUNCTIONS.keys() if "audio" in func or "voice" in func],
-            "database": [func for func in REGISTERED_HIGH_SCALE_FUNCTIONS.keys() if any(x in func for x in ["bulk_", "data_", "cache_"])],
-            "notifications": [func for func in REGISTERED_HIGH_SCALE_FUNCTIONS.keys() if any(x in func for x in ["notification", "email", "push"])],
-            "files": [func for func in REGISTERED_HIGH_SCALE_FUNCTIONS.keys() if any(x in func for x in ["file_", "image_", "video_"])],
-            "analytics": [func for func in REGISTERED_HIGH_SCALE_FUNCTIONS.keys() if any(x in func for x in ["metrics_", "report_", "backup"])],
-            "ml": [func for func in REGISTERED_HIGH_SCALE_FUNCTIONS.keys() if any(x in func for x in ["model_", "batch_prediction", "feature_"])],
-            "system": [func for func in REGISTERED_HIGH_SCALE_FUNCTIONS.keys() if any(x in func for x in ["system_", "log_", "cleanup_"])],
-            "realtime": [func for func in REGISTERED_HIGH_SCALE_FUNCTIONS.keys() if any(x in func for x in ["websocket_", "realtime_", "live_"])]
-        }
+        metrics = await get_scale_metrics()
         
         return {
-            "functions_by_category": functions_by_category,
-            "total_functions": len(REGISTERED_HIGH_SCALE_FUNCTIONS),
-            "categories": list(functions_by_category.keys()),
-            "recommended_priorities": {
-                "vicky_ai": "CRITICAL",
-                "audio": "HIGH", 
-                "database": "NORMAL",
-                "notifications": "HIGH",
-                "files": "NORMAL",
-                "analytics": "LOW",
-                "ml": "BATCH",
-                "system": "MAINTENANCE",
-                "realtime": "CRITICAL"
+            "status": "running",
+            "message": "Sistema de alta escala operativo",
+            "initialized": True,
+            "uptime": metrics.get("timestamp", 0),
+            "redis_nodes": metrics.get("redis_nodes", 0),
+            "total_workers": sum(
+                pool_info.get("max_workers", 0) 
+                for pool_info in metrics.get("worker_pools", {}).values()
+            ),
+            "memory_mode": metrics.get("memory_mode", {}).get("enabled", False),
+            "performance": {
+                "completed_tasks": metrics.get("completed_tasks", 0),
+                "failed_tasks": metrics.get("failed_tasks", 0),
+                "pending_tasks": metrics.get("total_pending_tasks", 0),
+                "throughput": metrics.get("throughput_per_second", 0.0)
             }
         }
         
     except Exception as e:
-        logger.error(f"Error listando funciones de alta escala: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error listando funciones: {str(e)}"
-        )
+        logger.error(f"Error obteniendo estado: {e}")
+        return {
+            "status": "error",
+            "message": f"Error obteniendo estado: {str(e)}",
+            "initialized": False
+        }
 
-# Funciones auxiliares
-def _get_priority_description(priority: TaskPriority) -> str:
-    descriptions = {
-        TaskPriority.EMERGENCY: "Emergencias críticas que requieren atención inmediata",
-        TaskPriority.CRITICAL: "Tareas críticas del sistema con SLA estricto",
-        TaskPriority.HIGH: "Alta prioridad para operaciones importantes",
-        TaskPriority.NORMAL: "Prioridad normal para operaciones estándar",
-        TaskPriority.LOW: "Baja prioridad para tareas no urgentes",
-        TaskPriority.BATCH: "Procesamiento en lotes optimizado",
-        TaskPriority.BACKGROUND: "Tareas de fondo sin urgencia",
-        TaskPriority.MAINTENANCE: "Tareas de mantenimiento del sistema"
-    }
-    return descriptions.get(priority, "Sin descripción")
-
-def _get_priority_use_cases(priority: TaskPriority) -> List[str]:
-    use_cases = {
-        TaskPriority.EMERGENCY: ["Fallos críticos", "Alertas de seguridad", "Recuperación de desastres"],
-        TaskPriority.CRITICAL: ["Procesamiento de Vicky AI", "Transacciones financieras", "Comunicaciones en tiempo real"],
-        TaskPriority.HIGH: ["Análisis de audio", "Notificaciones push", "Consultas interactivas"],
-        TaskPriority.NORMAL: ["Procesamiento de archivos", "Reportes", "Operaciones CRUD"],
-        TaskPriority.LOW: ["Analytics", "Agregaciones", "Sincronización"],
-        TaskPriority.BATCH: ["ML training", "Procesamiento masivo", "ETL"],
-        TaskPriority.BACKGROUND: ["Limpieza", "Optimización", "Indexación"],
-        TaskPriority.MAINTENANCE: ["Backups", "Health checks", "Log rotation"]
-    }
-    return use_cases.get(priority, [])
-
-def _get_priority_sla(priority: TaskPriority) -> str:
-    slas = {
-        TaskPriority.EMERGENCY: "< 100ms",
-        TaskPriority.CRITICAL: "< 500ms",
-        TaskPriority.HIGH: "< 2s",
-        TaskPriority.NORMAL: "< 10s",
-        TaskPriority.LOW: "< 60s",
-        TaskPriority.BATCH: "< 5min",
-        TaskPriority.BACKGROUND: "< 30min",
-        TaskPriority.MAINTENANCE: "< 2h"
-    }
-    return slas.get(priority, "Sin SLA definido")
-
-def _get_worker_type_description(worker_type: WorkerType) -> str:
-    descriptions = {
-        WorkerType.CPU_INTENSIVE: "Workers optimizados para tareas que requieren mucho procesamiento CPU",
-        WorkerType.IO_INTENSIVE: "Workers optimizados para operaciones de E/S intensivas",
-        WorkerType.MEMORY_INTENSIVE: "Workers optimizados para tareas que requieren mucha memoria",
-        WorkerType.NETWORK_INTENSIVE: "Workers optimizados para operaciones de red intensivas",
-        WorkerType.GENERAL_PURPOSE: "Workers de propósito general para tareas variadas"
-    }
-    return descriptions.get(worker_type, "Sin descripción")
-
-def _get_worker_type_optimal_for(worker_type: WorkerType) -> List[str]:
-    optimal_for = {
-        WorkerType.CPU_INTENSIVE: ["ML training", "Cálculos complejos", "Procesamiento de imágenes", "Algoritmos"],
-        WorkerType.IO_INTENSIVE: ["Operaciones de BD", "Lectura/escritura de archivos", "Logs", "Cache"],
-        WorkerType.MEMORY_INTENSIVE: ["Procesamiento de grandes datasets", "Analytics en memoria", "Caching"],
-        WorkerType.NETWORK_INTENSIVE: ["APIs externas", "Webhooks", "Notificaciones", "Sincronización"],
-        WorkerType.GENERAL_PURPOSE: ["Tareas mixtas", "Procesamiento general", "CRUD", "Validaciones"]
-    }
-    return optimal_for.get(worker_type, []) 
-
-
-# ===========================================
-# NEW APIS - DLQ Y DISTRIBUTED LOCKING
-# ===========================================
-
-@router.get("/dlq", response_model=Dict[str, Any])
-async def get_dead_letter_queue_tasks(
-    worker_type: Optional[str] = Query(None, description="Filtrar por tipo de worker"),
-    limit: int = Query(100, ge=1, le=1000, description="Límite de tareas a retornar")
-):
+@router.post("/control")
+async def control_system(request: SystemControlRequest):
     """
-    📋 Obtener tareas de Dead Letter Queue
-    
-    Retorna tareas que fallaron después de agotar todos los reintentos:
-    - Tareas con errores permanentes
-    - Tareas que excedieron max_retries
-    - Información detallada de errores
+    Controlar el sistema de alta escala (inicializar, apagar, reiniciar)
     """
     try:
-        if not high_scale_task_manager:
+        action = request.action.lower()
+        
+        if action == "initialize":
             await initialize_high_scale_system()
+            return {
+                "status": "success",
+                "message": "Sistema de alta escala inicializado correctamente",
+                "action": action
+            }
+            
+        elif action == "shutdown":
+            await shutdown_high_scale_system()
+            return {
+                "status": "success",
+                "message": "Sistema de alta escala apagado correctamente",
+                "action": action
+            }
+            
+        elif action == "restart":
+            # Shutdown y luego initialize
+            await shutdown_high_scale_system()
+            await asyncio.sleep(2)  # Esperar un poco
+            await initialize_high_scale_system()
+            return {
+                "status": "success",
+                "message": "Sistema de alta escala reiniciado correctamente",
+                "action": action
+            }
+            
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Acción no válida: {action}. Opciones: initialize, shutdown, restart"
+            )
+            
+    except Exception as e:
+        logger.error(f"Error controlando sistema: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error ejecutando acción {request.action}: {str(e)}"
+        )
+
+@router.get("/dlq", response_model=DLQTaskResponse)
+async def get_dead_letter_queue_tasks(
+    worker_type: Optional[str] = Query(None, description="Filtrar por tipo de worker"),
+    limit: int = Query(50, ge=1, le=500, description="Número máximo de tareas a retornar")
+):
+    """
+    Obtener tareas de Dead Letter Queue (tareas fallidas)
+    """
+    try:
+        global high_scale_task_manager
+        
+        if high_scale_task_manager is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Sistema de alta escala no inicializado"
+            )
+        
+        # Validar worker_type si se proporciona
+        if worker_type:
+            try:
+                WorkerType[worker_type.upper()]
+                worker_type = worker_type.upper()
+            except KeyError:
+                valid_types = [wt.name for wt in WorkerType]
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Tipo de worker inválido. Opciones válidas: {valid_types}"
+                )
         
         dlq_tasks = await high_scale_task_manager.get_dlq_tasks(worker_type, limit)
         
-        return {
-            "total_tasks": len(dlq_tasks),
-            "worker_type_filter": worker_type,
-            "tasks": dlq_tasks,
-            "timestamp": time.time()
-        }
+        return DLQTaskResponse(
+            total_tasks=len(dlq_tasks),
+            tasks=dlq_tasks,
+            worker_types=list(set(task.get("worker_type", "unknown") for task in dlq_tasks))
+        )
         
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error obteniendo DLQ: {e}")
-        raise HTTPException(status_code=500, detail=f"Error obteniendo DLQ: {str(e)}")
-
+        logger.error(f"Error obteniendo tareas DLQ: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error obteniendo tareas DLQ: {str(e)}"
+        )
 
 @router.post("/dlq/{task_id}/retry")
-async def retry_dlq_task(task_id: str):
+async def retry_dlq_task(task_id: str = Path(..., description="ID de la tarea a reintentar")):
     """
-    🔄 Reintentar tarea desde Dead Letter Queue
-    
-    Remueve la tarea de DLQ y la reencola para procesamiento:
-    - Resetea contadores de reintentos
-    - Elimina información de error
-    - Reencola con prioridad original
+    Reintentar una tarea desde Dead Letter Queue
     """
     try:
-        if not high_scale_task_manager:
-            await initialize_high_scale_system()
+        global high_scale_task_manager
+        
+        if high_scale_task_manager is None:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Sistema de alta escala no inicializado"
+            )
         
         success = await high_scale_task_manager.retry_dlq_task(task_id)
         
         if success:
             return {
-                "success": True,
+                "status": "success",
                 "message": f"Tarea {task_id} reintentada desde DLQ",
-                "task_id": task_id,
-                "timestamp": time.time()
+                "task_id": task_id
             }
         else:
-            raise HTTPException(status_code=404, detail=f"Tarea {task_id} no encontrada en DLQ")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Tarea {task_id} no encontrada en DLQ"
+            )
             
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error reintentando tarea DLQ {task_id}: {e}")
-        raise HTTPException(status_code=500, detail=f"Error reintentando tarea: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error reintentando tarea DLQ: {str(e)}"
+        )
 
-
-@router.post("/lock/{lock_key}/acquire")
-async def acquire_distributed_lock(
-    lock_key: str,
-    worker_id: str = Query(..., description="ID único del worker solicitante"),
-    timeout: int = Query(30, ge=1, le=300, description="Timeout en segundos")
-):
+@router.get("/workers")
+async def get_worker_info():
     """
-    🔒 Adquirir lock distribuido
-    
-    Permite coordinación entre workers distribuidos:
-    - Lock atómico usando Redis
-    - Expiración automática
-    - Previene procesamiento duplicado
+    Obtener información detallada sobre los workers
     """
     try:
-        if not high_scale_task_manager:
-            await initialize_high_scale_system()
+        metrics = await get_scale_metrics()
+        worker_pools = metrics.get("worker_pools", {})
         
-        acquired = await high_scale_task_manager.acquire_distributed_lock(lock_key, worker_id, timeout)
-        
-        return {
-            "acquired": acquired,
-            "lock_key": lock_key,
-            "worker_id": worker_id,
-            "timeout": timeout,
-            "expires_at": time.time() + timeout if acquired else None,
-            "timestamp": time.time()
-        }
-        
-    except Exception as e:
-        logger.error(f"Error adquiriendo lock {lock_key}: {e}")
-        raise HTTPException(status_code=500, detail=f"Error adquiriendo lock: {str(e)}")
-
-
-@router.delete("/lock/{lock_key}/release")
-async def release_distributed_lock(
-    lock_key: str,
-    worker_id: str = Query(..., description="ID del worker que posee el lock")
-):
-    """
-    🔓 Liberar lock distribuido
-    
-    Libera lock previamente adquirido:
-    - Verificación de ownership
-    - Release atómico
-    - Logging de operación
-    """
-    try:
-        if not high_scale_task_manager:
-            await initialize_high_scale_system()
-        
-        released = await high_scale_task_manager.release_distributed_lock(lock_key, worker_id)
-        
-        return {
-            "released": released,
-            "lock_key": lock_key,
-            "worker_id": worker_id,
-            "timestamp": time.time()
-        }
-        
-    except Exception as e:
-        logger.error(f"Error liberando lock {lock_key}: {e}")
-        raise HTTPException(status_code=500, detail=f"Error liberando lock: {str(e)}")
-
-
-@router.get("/workers/status")
-async def get_workers_status():
-    """
-    👷 Estado de workers distribuidos
-    
-    Información detallada de workers Redis:
-    - Workers activos por tipo
-    - Colas monitoreadas
-    - Métricas de rendimiento
-    """
-    try:
-        if not high_scale_task_manager:
-            await initialize_high_scale_system()
-        
-        metrics = await high_scale_task_manager.get_global_metrics()
-        
-        worker_status = {
-            "total_workers": sum(metrics["worker_pools"][wt]["max_workers"] for wt in metrics["worker_pools"]),
-            "active_workers": metrics.get("active_workers", 0),
-            "worker_pools": metrics["worker_pools"],
-            "redis_nodes": metrics.get("redis_nodes", 0),
-            "partitions": metrics.get("partitions", 0),
-            "system_resources": metrics.get("system_resources", {}),
-            "timestamp": time.time()
-        }
-        
-        # Agregar información de workers Redis si están disponibles
-        if hasattr(high_scale_task_manager, 'worker_tasks'):
-            worker_status["redis_workers"] = {
-                "total": len(high_scale_task_manager.worker_tasks),
-                "running": len([t for t in high_scale_task_manager.worker_tasks if not t.done()]),
-                "failed": len([t for t in high_scale_task_manager.worker_tasks if t.done() and t.exception()])
+        worker_info = {}
+        for worker_type, pool_info in worker_pools.items():
+            worker_info[worker_type] = {
+                "max_workers": pool_info.get("max_workers", 0),
+                "pool_type": pool_info.get("pool_type", "unknown"),
+                "description": get_worker_type_description(worker_type)
             }
         
-        return worker_status
+        return {
+            "worker_pools": worker_info,
+            "total_workers": sum(info["max_workers"] for info in worker_info.values()),
+            "system_resources": metrics.get("system_resources", {}),
+            "recommendations": get_worker_recommendations(metrics)
+        }
         
     except Exception as e:
-        logger.error(f"Error obteniendo estado de workers: {e}")
-        raise HTTPException(status_code=500, detail=f"Error obteniendo estado: {str(e)}") 
+        logger.error(f"Error obteniendo información de workers: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error obteniendo información de workers: {str(e)}"
+        )
+
+def get_worker_type_description(worker_type: str) -> str:
+    """Obtener descripción del tipo de worker"""
+    descriptions = {
+        "CPU_INTENSIVE": "Tareas que requieren mucho procesamiento de CPU (cálculos matemáticos, algoritmos)",
+        "IO_INTENSIVE": "Tareas de entrada/salida (lectura/escritura de archivos, base de datos)",
+        "MEMORY_INTENSIVE": "Tareas que requieren mucha memoria (procesamiento de grandes datasets)",
+        "NETWORK_INTENSIVE": "Tareas de red (llamadas HTTP, APIs externas)",
+        "GENERAL_PURPOSE": "Tareas generales que no requieren optimizaciones específicas"
+    }
+    return descriptions.get(worker_type, "Tipo de worker desconocido")
+
+def get_worker_recommendations(metrics: Dict[str, Any]) -> List[str]:
+    """Generar recomendaciones basadas en métricas"""
+    recommendations = []
+    
+    system_resources = metrics.get("system_resources", {})
+    cpu_percent = system_resources.get("cpu_percent", 0)
+    memory_percent = system_resources.get("memory_percent", 0)
+    
+    if cpu_percent > 80:
+        recommendations.append("CPU usage alto - considera reducir workers CPU intensivos")
+    elif cpu_percent < 20:
+        recommendations.append("CPU usage bajo - puedes incrementar workers CPU intensivos")
+    
+    if memory_percent > 85:
+        recommendations.append("Memoria alta - reduce workers memory intensivos")
+    elif memory_percent < 30:
+        recommendations.append("Memoria baja - puedes incrementar workers memory intensivos")
+    
+    pending_tasks = metrics.get("total_pending_tasks", 0)
+    if pending_tasks > 1000:
+        recommendations.append("Cola de tareas alta - considera incrementar workers")
+    
+    return recommendations
+
+# Endpoints de demostración
+
+@router.post("/demo/submit-demo-tasks")
+async def submit_demo_tasks(count: int = Query(5, ge=1, le=50, description="Número de tareas demo a enviar")):
+    """
+    Enviar tareas de demostración para probar el sistema
+    """
+    try:
+        demo_tasks = [
+            {"func": "demo_cpu_task", "args": [1000], "priority": "HIGH", "worker_type": "CPU_INTENSIVE"},
+            {"func": "demo_io_task", "args": [], "priority": "NORMAL", "worker_type": "IO_INTENSIVE"},
+            {"func": "demo_network_task", "args": ["https://api.example.com"], "priority": "LOW", "worker_type": "NETWORK_INTENSIVE"},
+            {"func": "demo_memory_task", "args": [100], "priority": "NORMAL", "worker_type": "MEMORY_INTENSIVE"},
+            {"func": "math.sqrt", "args": [16], "priority": "NORMAL", "worker_type": "GENERAL_PURPOSE"},
+        ]
+        
+        submitted_tasks = []
+        
+        for i in range(min(count, len(demo_tasks))):
+            task = demo_tasks[i % len(demo_tasks)]
+            
+            try:
+                func = resolve_function_from_name(task["func"])
+                task_id = await submit_high_scale_task(
+                    func=func,
+                    args=tuple(task["args"]),
+                    priority=TaskPriority[task["priority"]],
+                    worker_type=WorkerType[task["worker_type"]],
+                    name=f"demo_{task['func']}_{i}",
+                    category="demo"
+                )
+                
+                submitted_tasks.append({
+                    "task_id": task_id,
+                    "function": task["func"],
+                    "priority": task["priority"],
+                    "worker_type": task["worker_type"]
+                })
+                
+            except Exception as e:
+                logger.error(f"Error enviando tarea demo {task['func']}: {e}")
+                continue
+        
+        return {
+            "status": "success",
+            "message": f"Se enviaron {len(submitted_tasks)} tareas de demostración",
+            "submitted_tasks": submitted_tasks,
+            "recommendation": "Usa GET /metrics para ver el progreso de las tareas"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error enviando tareas demo: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error enviando tareas demo: {str(e)}"
+        )
+
+logger.info("🔥 Router High Scale Tasks cargado exitosamente") 

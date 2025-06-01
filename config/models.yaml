@@ -1,0 +1,49 @@
+# Configuración de modelos para Vicky AI
+language_models:
+  default: "chat-model"
+  models:
+    chat-model:
+      name: "chat-model"
+      type: "local"
+      path: "models/chat"
+      enabled: true
+
+translation_models:
+  default: "translation-model"
+  models:
+    translation-model:
+      name: "translation-model"
+      type: "local"
+      path: "models/translation"
+      enabled: true
+
+speech_recognition:
+  default: "stt-model"
+  models:
+    stt-model:
+      name: "stt-model"
+      type: "local"
+      path: "models/stt"
+      enabled: true
+
+text_to_speech:
+  default: "tts-model"
+  models:
+    tts-model:
+      name: "tts-model"
+      type: "local"
+      path: "models/tts"
+      enabled: true
+
+embeddings:
+  default: "embedding-model"
+  models:
+    embedding-model:
+      name: "embedding-model"
+      type: "local"
+      path: "models/embeddings"
+      enabled: true
+
+# Configuración general
+cache_enabled: true
+fallback_enabled: true 

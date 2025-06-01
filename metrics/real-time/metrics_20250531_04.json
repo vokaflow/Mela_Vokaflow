@@ -1,0 +1,1096 @@
+{
+  "metrics": [
+    {
+      "timestamp": "2025-05-31T04:00:08.610770",
+      "system": {
+        "cpu_percent": 0.6,
+        "memory": {
+          "total": 134966845440,
+          "available": 131826475008,
+          "percent": 2.3,
+          "used": 1834070016,
+          "free": 130246115328,
+          "active": 2261118976,
+          "inactive": 1245933568,
+          "buffers": 255336448,
+          "cached": 2631323648,
+          "shared": 72171520,
+          "slab": 570556416
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518429184,
+          "free": 187085287424,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 609136238,
+          "bytes_recv": 607409952,
+          "packets_sent": 1226119,
+          "packets_recv": 1361546,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21187,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.19580078125,
+          0.2001953125,
+          0.13330078125
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2032128,
+          "connected_clients": 2,
+          "ops_per_sec": 2,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5812
+        },
+        "redis_7001": {
+          "used_memory": 2013352,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1958320,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1861592,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1914672,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1916128,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2025-05-31T04:00:19.637039",
+      "system": {
+        "cpu_percent": 0.1,
+        "memory": {
+          "total": 134966845440,
+          "available": 131836108800,
+          "percent": 2.3,
+          "used": 1824419840,
+          "free": 130255745024,
+          "active": 2262786048,
+          "inactive": 1245937664,
+          "buffers": 255352832,
+          "cached": 2631327744,
+          "shared": 72171520,
+          "slab": 570605568
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518437376,
+          "free": 187085279232,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 609545047,
+          "bytes_recv": 607821070,
+          "packets_sent": 1226604,
+          "packets_recv": 1362066,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21194,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.1650390625,
+          0.193359375,
+          0.13134765625
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2032128,
+          "connected_clients": 2,
+          "ops_per_sec": 2,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5816
+        },
+        "redis_7001": {
+          "used_memory": 2013352,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1958320,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1861592,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1955600,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1916128,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2025-05-31T04:00:30.666166",
+      "system": {
+        "cpu_percent": 0.1,
+        "memory": {
+          "total": 134966845440,
+          "available": 131833028608,
+          "percent": 2.3,
+          "used": 1827479552,
+          "free": 130252660736,
+          "active": 2261250048,
+          "inactive": 1245941760,
+          "buffers": 255369216,
+          "cached": 2631335936,
+          "shared": 72171520,
+          "slab": 570593280
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518445568,
+          "free": 187085271040,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 609950603,
+          "bytes_recv": 608227895,
+          "packets_sent": 1227081,
+          "packets_recv": 1362581,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21202,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.1279296875,
+          0.18310546875,
+          0.12841796875
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2032128,
+          "connected_clients": 2,
+          "ops_per_sec": 2,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5820
+        },
+        "redis_7001": {
+          "used_memory": 2013352,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1958320,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1861592,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1914672,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1916128,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2025-05-31T04:00:41.692222",
+      "system": {
+        "cpu_percent": 0.1,
+        "memory": {
+          "total": 134966845440,
+          "available": 131836538880,
+          "percent": 2.3,
+          "used": 1824026624,
+          "free": 130256089088,
+          "active": 2261311488,
+          "inactive": 1246023680,
+          "buffers": 255385600,
+          "cached": 2631344128,
+          "shared": 72171520,
+          "slab": 570724352
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518449664,
+          "free": 187085266944,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 610357450,
+          "bytes_recv": 608636977,
+          "packets_sent": 1227582,
+          "packets_recv": 1363116,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21209,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.1884765625,
+          0.193359375,
+          0.13232421875
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2038264,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5824
+        },
+        "redis_7001": {
+          "used_memory": 2013352,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1958320,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1861592,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1914672,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1916128,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2025-05-31T04:00:52.724879",
+      "system": {
+        "cpu_percent": 0.2,
+        "memory": {
+          "total": 134966845440,
+          "available": 131846881280,
+          "percent": 2.3,
+          "used": 1813667840,
+          "free": 130266427392,
+          "active": 2262573056,
+          "inactive": 1246027776,
+          "buffers": 255401984,
+          "cached": 2631348224,
+          "shared": 72171520,
+          "slab": 570699776
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518453760,
+          "free": 187085262848,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 610768623,
+          "bytes_recv": 609048158,
+          "packets_sent": 1228089,
+          "packets_recv": 1363647,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21214,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.1591796875,
+          0.1865234375,
+          0.13037109375
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2017792,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5828
+        },
+        "redis_7001": {
+          "used_memory": 2013352,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1958320,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1861592,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1914672,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1916128,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2025-05-31T04:01:03.758653",
+      "system": {
+        "cpu_percent": 0.1,
+        "memory": {
+          "total": 134966845440,
+          "available": 131848429568,
+          "percent": 2.3,
+          "used": 1812099072,
+          "free": 130267975680,
+          "active": 2261311488,
+          "inactive": 1246027776,
+          "buffers": 255418368,
+          "cached": 2631352320,
+          "shared": 72171520,
+          "slab": 570724352
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518457856,
+          "free": 187085258752,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 611175560,
+          "bytes_recv": 609456469,
+          "packets_sent": 1228575,
+          "packets_recv": 1364166,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21220,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.21484375,
+          0.19677734375,
+          0.13427734375
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2017792,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5832
+        },
+        "redis_7001": {
+          "used_memory": 2013352,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1958320,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1861592,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1914672,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1916128,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2025-05-31T04:01:14.792693",
+      "system": {
+        "cpu_percent": 0.1,
+        "memory": {
+          "total": 134966845440,
+          "available": 131855839232,
+          "percent": 2.3,
+          "used": 1804664832,
+          "free": 130275250176,
+          "active": 2261475328,
+          "inactive": 1246031872,
+          "buffers": 255434752,
+          "cached": 2631495680,
+          "shared": 72171520,
+          "slab": 570621952
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518470144,
+          "free": 187085246464,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 611583502,
+          "bytes_recv": 609865500,
+          "packets_sent": 1229059,
+          "packets_recv": 1364681,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21227,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.18115234375,
+          0.18994140625,
+          0.13232421875
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2017792,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5836
+        },
+        "redis_7001": {
+          "used_memory": 2013352,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1958320,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1861592,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1914672,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1916128,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2025-05-31T04:01:25.826215",
+      "system": {
+        "cpu_percent": 0.0,
+        "memory": {
+          "total": 134966845440,
+          "available": 131857022976,
+          "percent": 2.3,
+          "used": 1803522048,
+          "free": 130276372480,
+          "active": 2260000768,
+          "inactive": 1246093312,
+          "buffers": 255459328,
+          "cached": 2631491584,
+          "shared": 72171520,
+          "slab": 570531840
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518474240,
+          "free": 187085242368,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 611989445,
+          "bytes_recv": 610272373,
+          "packets_sent": 1229540,
+          "packets_recv": 1365183,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21234,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.14013671875,
+          0.1796875,
+          0.12939453125
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2038264,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5842
+        },
+        "redis_7001": {
+          "used_memory": 2013352,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1958320,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1873864,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1920808,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1916128,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2025-05-31T04:01:36.860957",
+      "system": {
+        "cpu_percent": 0.1,
+        "memory": {
+          "total": 134966845440,
+          "available": 131858829312,
+          "percent": 2.3,
+          "used": 1801719808,
+          "free": 130278150144,
+          "active": 2260054016,
+          "inactive": 1246121984,
+          "buffers": 255475712,
+          "cached": 2631499776,
+          "shared": 72171520,
+          "slab": 570687488
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518482432,
+          "free": 187085234176,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 612394701,
+          "bytes_recv": 610679315,
+          "packets_sent": 1230022,
+          "packets_recv": 1365696,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21240,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.1181640625,
+          0.17333984375,
+          0.12744140625
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2038264,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5846
+        },
+        "redis_7001": {
+          "used_memory": 2013352,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1964456,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1861592,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1920808,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1922264,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2025-05-31T04:01:47.896058",
+      "system": {
+        "cpu_percent": 0.6,
+        "memory": {
+          "total": 134966845440,
+          "available": 131846885376,
+          "percent": 2.3,
+          "used": 1813667840,
+          "free": 130266042368,
+          "active": 2259726336,
+          "inactive": 1246154752,
+          "buffers": 255492096,
+          "cached": 2631643136,
+          "shared": 72171520,
+          "slab": 570736640
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518494720,
+          "free": 187085221888,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 612803907,
+          "bytes_recv": 611091648,
+          "packets_sent": 1230510,
+          "packets_recv": 1366222,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21247,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.099609375,
+          0.16748046875,
+          0.12548828125
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2038264,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5850
+        },
+        "redis_7001": {
+          "used_memory": 2013352,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1963432,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1861592,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1926944,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1916128,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2025-05-31T04:01:58.930249",
+      "system": {
+        "cpu_percent": 0.3,
+        "memory": {
+          "total": 134966845440,
+          "available": 131825684480,
+          "percent": 2.3,
+          "used": 1834827776,
+          "free": 130244718592,
+          "active": 2262777856,
+          "inactive": 1246269440,
+          "buffers": 255533056,
+          "cached": 2631766016,
+          "shared": 72179712,
+          "slab": 570634240
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518502912,
+          "free": 187085213696,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 613214162,
+          "bytes_recv": 611511318,
+          "packets_sent": 1231010,
+          "packets_recv": 1366755,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21253,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.16455078125,
+          0.1787109375,
+          0.12939453125
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2038264,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5854
+        },
+        "redis_7001": {
+          "used_memory": 2013352,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1958320,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1867728,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1920808,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1916128,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2025-05-31T04:02:09.965192",
+      "system": {
+        "cpu_percent": 0.1,
+        "memory": {
+          "total": 134966845440,
+          "available": 131832053760,
+          "percent": 2.3,
+          "used": 1828438016,
+          "free": 130251087872,
+          "active": 2262794240,
+          "inactive": 1246269440,
+          "buffers": 255549440,
+          "cached": 2631770112,
+          "shared": 72179712,
+          "slab": 570589184
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518502912,
+          "free": 187085213696,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 613619490,
+          "bytes_recv": 611918664,
+          "packets_sent": 1231484,
+          "packets_recv": 1367255,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21258,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.13916015625,
+          0.17236328125,
+          0.12744140625
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2038264,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5858
+        },
+        "redis_7001": {
+          "used_memory": 2019488,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1958320,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1867728,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1920808,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1916128,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2025-05-31T04:02:21.001251",
+      "system": {
+        "cpu_percent": 0.1,
+        "memory": {
+          "total": 134966845440,
+          "available": 131834224640,
+          "percent": 2.3,
+          "used": 1826308096,
+          "free": 130253193216,
+          "active": 2262732800,
+          "inactive": 1246334976,
+          "buffers": 255565824,
+          "cached": 2631778304,
+          "shared": 72179712,
+          "slab": 570540032
+        },
+        "disk": {
+          "total": 348375191552,
+          "used": 143518511104,
+          "free": 187085205504,
+          "percent": 43.4
+        },
+        "network": {
+          "bytes_sent": 614024247,
+          "bytes_recv": 612325536,
+          "packets_sent": 1231953,
+          "packets_recv": 1367764,
+          "errin": 0,
+          "errout": 0,
+          "dropin": 21265,
+          "dropout": 0
+        },
+        "load_avg": [
+          0.10791015625,
+          0.16357421875,
+          0.12451171875
+        ]
+      },
+      "redis_cluster": {
+        "redis_7000": {
+          "used_memory": 2017792,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 2,
+          "keyspace_misses": 5862
+        },
+        "redis_7001": {
+          "used_memory": 2013352,
+          "connected_clients": 2,
+          "ops_per_sec": 1,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7002": {
+          "used_memory": 1964456,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7003": {
+          "used_memory": 1861592,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7004": {
+          "used_memory": 1920808,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        },
+        "redis_7005": {
+          "used_memory": 1922264,
+          "connected_clients": 2,
+          "ops_per_sec": 0,
+          "keyspace_hits": 0,
+          "keyspace_misses": 0
+        }
+      }
+    }
+  ]
+}
