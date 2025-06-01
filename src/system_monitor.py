@@ -1,49 +1,70 @@
+#!/usr/bin/env python3
 """
-Sistema de monitoreo básico para VokaFlow
+Monitor del sistema para VokaFlow
 """
 import psutil
 import time
-import platform
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 class SystemMonitor:
     def __init__(self):
         self.start_time = time.time()
-        
+    
     def get_system_status(self) -> Dict[str, Any]:
         """Obtiene el estado actual del sistema"""
-        uptime = time.time() - self.start_time
-        
-        return {
-            "status": "healthy",
-            "status_message": "Sistema funcionando correctamente",
-            "uptime_formatted": f"{int(uptime//3600)}h {int((uptime%3600)//60)}m",
-            "hostname": platform.node(),
-            "current_metrics": {
-                "cpu": {"percent": psutil.cpu_percent()},
-                "memory": {"virtual": {"percent": psutil.virtual_memory().percent}},
-                "disk": {"usage": {"percent": psutil.disk_usage('/').percent}}
-            },
-            "components": {
-                "python": {"status": "ok"},
-                "database": {"status": "connected"}
-            },
-            "warnings": []
-        }
+        try:
+            cpu_percent = psutil.cpu_percent(interval=1)
+            memory = psutil.virtual_memory()
+            disk = psutil.disk_usage('/')
+            
+            return {
+                "status": "healthy" if cpu_percent < 80 and memory.percent < 80 else "warning",
+                "status_message": "Sistema funcionando correctamente",
+                "uptime_formatted": self._format_uptime(),
+                "hostname": psutil.os.uname().nodename if hasattr(psutil.os, 'uname') else "unknown",
+                "current_metrics": {
+                    "cpu": {"percent": cpu_percent},
+                    "memory": {"virtual": {"percent": memory.percent}},
+                    "disk": {"usage": {"percent": disk.percent}}
+                },
+                "components": {
+                    "python": {"status": "healthy"},
+                    "database": {"status": "healthy"}
+                },
+                "warnings": []
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "status_message": f"Error al obtener métricas: {str(e)}",
+                "uptime_formatted": self._format_uptime(),
+                "hostname": "unknown",
+                "current_metrics": {"cpu": {"percent": 0}, "memory": {"virtual": {"percent": 0}}, "disk": {"usage": {"percent": 0}}},
+                "components": {"python": {"status": "error"}, "database": {"status": "unknown"}},
+                "warnings": [f"Error en monitor del sistema: {str(e)}"]
+            }
     
-    def get_detailed_metrics(self, component=None, limit=20):
-        """Obtiene métricas detalladas"""
+    def _format_uptime(self) -> str:
+        """Formatea el tiempo de actividad"""
+        uptime_seconds = int(time.time() - self.start_time)
+        hours = uptime_seconds // 3600
+        minutes = (uptime_seconds % 3600) // 60
+        seconds = uptime_seconds % 60
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    
+    def get_detailed_metrics(self, component: Optional[str] = None, limit: int = 20) -> Dict[str, Any]:
+        """Obtiene métricas detalladas del sistema"""
         return {
-            "cpu_percent": psutil.cpu_percent(),
-            "memory_percent": psutil.virtual_memory().percent,
-            "disk_percent": psutil.disk_usage('/').percent,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
+            "metrics": self.get_system_status(),
+            "component": component,
+            "limit": limit
         }
 
 # Instancia global
 _system_monitor = SystemMonitor()
 
-def get_system_monitor():
+def get_system_monitor() -> SystemMonitor:
     """Obtiene la instancia del monitor del sistema"""
     return _system_monitor

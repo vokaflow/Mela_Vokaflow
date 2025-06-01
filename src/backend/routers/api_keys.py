@@ -262,7 +262,7 @@ async def create_api_key(api_key_create: ApiKeyCreate):
             expires_at=api_key_create.expires_at,
             last_used_at=None,
             rate_limit=api_key_create.rate_limit,
-            metadata=api_key_create.metadata or {
+            metadata=api_key_create.msg_metadata or {
                 "created_by": "api",
                 "created_at": datetime.now().isoformat()
             }

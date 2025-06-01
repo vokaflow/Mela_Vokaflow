@@ -154,7 +154,7 @@ async def send_notification(
                     channel=channel,
                     status=NotificationStatus.PENDING,
                     user_id=recipient,
-                    metadata=notification_data.metadata,
+                    metadata=notification_data.msg_metadata,
                     expires_at=datetime.now() + timedelta(days=7)  # Expira en 7 días
                 )
                 

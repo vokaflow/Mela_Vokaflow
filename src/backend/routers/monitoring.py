@@ -517,7 +517,7 @@ async def create_alert(alert_create: AlertCreate):
             acknowledged_by=None,
             resolved_by=None,
             tags=alert_create.tags,
-            metadata=alert_create.metadata or {
+            metadata=alert_create.msg_metadata or {
                 "created_by": "api",
                 "created_at": datetime.now().isoformat(),
                 "auto_generated": False

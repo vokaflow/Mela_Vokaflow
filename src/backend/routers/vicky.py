@@ -20,7 +20,17 @@ from ..database import get_db
 from ..auth import get_current_user, get_current_active_user
 from ..models import UserDB, ConversationDB, MessageDB
 
+# Configurar logger ANTES de usarlo
 logger = logging.getLogger(__name__)
+
+# Importar el cerebro avanzado de Vicky
+try:
+    from ...vicky.core.brain import VickyBrain
+    ADVANCED_BRAIN_AVAILABLE = True
+    logger.info("🧠✨ Importación exitosa del cerebro dinámico de Vicky")
+except ImportError as e:
+    logger.warning(f"No se pudo importar el cerebro de Vicky: {e}")
+    ADVANCED_BRAIN_AVAILABLE = False
 
 router = APIRouter()
 
@@ -124,228 +134,70 @@ class VickyAnalytics(BaseModel):
     uptime_percentage: float
     daily_stats: List[Dict[str, Any]]
 
-# Simulador del cerebro de Vicky
-class VickyBrain:
-    def __init__(self):
-        self.start_time = datetime.now()
-        self.total_requests = 0
-        self.total_response_time = 0.0
-        self.current_balance = HemisphereBalance(technical=0.6, emotional=0.4)
-        self.loaded_models = ["qwen-7b", "nllb-200", "whisper-medium", "vicky-personality-v1"]
-        
-    async def process_message(
-        self, 
-        request: VickyRequest, 
-        user: Optional[UserDB] = None,
-        db: Optional[Session] = None
-    ) -> VickyResponse:
-        """Procesa un mensaje usando el cerebro de Vicky"""
-        start_time = time.time()
-        self.total_requests += 1
-        
-        try:
-            # Determinar balance de hemisferios basado en el mensaje
-            balance = self._analyze_hemisphere_balance(request.message, request.hemisphere_balance)
-            
-            # Generar respuesta basada en personalidad y modo
-            response_text = await self._generate_response(request, balance, user)
-            
-            # Calcular métricas
-            processing_time = time.time() - start_time
-            self.total_response_time += processing_time
-            
-            # Guardar conversación si es necesario
-            conversation_id, message_id = await self._save_conversation(
-                request, response_text, user, db
-            )
-            
-            return VickyResponse(
-                response=response_text,
-                context=request.context,
-                metadata={
-                    "personality": request.personality,
-                    "mode": request.mode,
-                    "language": request.language,
-                    "model_used": "vicky-personality-v1",
-                    "timestamp": datetime.now().isoformat()
-                },
-                conversation_id=conversation_id,
-                message_id=message_id,
-                processing_time=processing_time,
-                hemisphere_balance=balance,
-                confidence=0.92,
-                tokens_used=len(response_text.split())
-            )
-            
-        except Exception as e:
-            logger.error(f"Error en VickyBrain.process_message: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Error interno del cerebro de Vicky"
-            )
-    
-    def _analyze_hemisphere_balance(
-        self, 
-        message: str, 
-        custom_balance: Optional[HemisphereBalance]
-    ) -> HemisphereBalance:
-        """Analiza el balance de hemisferios necesario para el mensaje"""
-        if custom_balance:
-            return custom_balance
-            
-        # Palabras clave técnicas
-        technical_keywords = [
-            "código", "programa", "algoritmo", "función", "variable", "api", 
-            "base de datos", "servidor", "desarrollo", "bug", "error", "debug",
-            "framework", "biblioteca", "módulo", "clase", "método", "objeto"
-        ]
-        
-        # Palabras clave emocionales
-        emotional_keywords = [
-            "siento", "emoción", "feliz", "triste", "preocupado", "ansioso",
-            "amor", "miedo", "alegría", "dolor", "esperanza", "sueño",
-            "corazón", "alma", "sentimiento", "pasión", "cariño", "amistad"
-        ]
-        
-        message_lower = message.lower()
-        technical_count = sum(1 for word in technical_keywords if word in message_lower)
-        emotional_count = sum(1 for word in emotional_keywords if word in message_lower)
-        
-        if technical_count > emotional_count:
-            return HemisphereBalance(technical=0.8, emotional=0.2)
-        elif emotional_count > technical_count:
-            return HemisphereBalance(technical=0.3, emotional=0.7)
-        else:
-            return HemisphereBalance(technical=0.6, emotional=0.4)
-    
-    async def _generate_response(
-        self, 
-        request: VickyRequest, 
-        balance: HemisphereBalance,
-        user: Optional[UserDB]
-    ) -> str:
-        """Genera una respuesta usando el modelo de IA"""
-        # Simular tiempo de procesamiento
-        await asyncio.sleep(0.3 + (balance.technical * 0.2))
-        
-        # Personalizar respuesta según personalidad
-        personality_prefixes = {
-            VickyPersonality.TECHNICAL: "Desde un punto de vista técnico, ",
-            VickyPersonality.CREATIVE: "Imaginando posibilidades creativas, ",
-            VickyPersonality.ANALYTICAL: "Analizando los datos disponibles, ",
-            VickyPersonality.EMPATHETIC: "Entiendo cómo te sientes, ",
-            VickyPersonality.BALANCED: ""
-        }
-        
-        mode_contexts = {
-            VickyMode.CHAT: "conversando contigo",
-            VickyMode.ASSISTANT: "como tu asistente personal",
-            VickyMode.TUTOR: "en modo educativo",
-            VickyMode.TRANSLATOR: "enfocándome en la traducción",
-            VickyMode.CODER: "desde la perspectiva de programación"
-        }
-        
-        prefix = personality_prefixes.get(request.personality, "")
-        context = mode_contexts.get(request.mode, "conversando contigo")
-        
-        # Generar respuesta contextual
-        user_name = user.full_name if user and user.full_name else "usuario"
-        
-        if balance.technical > 0.7:
-            response = f"{prefix}he procesado tu consulta técnica sobre '{request.message[:50]}...'. Como {context}, puedo ayudarte a resolver este problema paso a paso. ¿Te gustaría que profundice en algún aspecto específico?"
-        elif balance.emotional > 0.7:
-            response = f"{prefix}percibo que hay emociones importantes en tu mensaje, {user_name}. Como {context}, estoy aquí para escucharte y apoyarte. ¿Quieres contarme más sobre cómo te sientes?"
-        else:
-            response = f"{prefix}he analizado tu mensaje '{request.message[:50]}...'. Como {context}, puedo ofrecerte una perspectiva equilibrada. ¿En qué aspecto te gustaría que me enfoque más?"
-        
-        return response
-    
-    async def _save_conversation(
-        self,
-        request: VickyRequest,
-        response: str,
-        user: Optional[UserDB],
-        db: Optional[Session]
-    ) -> tuple[Optional[int], Optional[int]]:
-        """Guarda la conversación en la base de datos"""
-        if not user or not db:
-            return None, None
-            
-        try:
-            # Buscar o crear conversación
-            conversation = None
-            if request.conversation_id:
-                conversation = db.query(ConversationDB).filter(
-                    ConversationDB.id == request.conversation_id,
-                    ConversationDB.user_id == user.id
-                ).first()
-            
-            if not conversation:
-                conversation = ConversationDB(
-                    user_id=user.id,
-                    title=request.message[:50] + "..." if len(request.message) > 50 else request.message
-                )
-                db.add(conversation)
-                db.commit()
-                db.refresh(conversation)
-            
-            # Guardar mensaje del usuario
-            user_message = MessageDB(
-                conversation_id=conversation.id,
-                role="user",
-                content=request.message
-            )
-            db.add(user_message)
-            
-            # Guardar respuesta de Vicky
-            vicky_message = MessageDB(
-                conversation_id=conversation.id,
-                role="assistant",
-                content=response
-            )
-            db.add(vicky_message)
-            db.commit()
-            db.refresh(vicky_message)
-            
-            return conversation.id, vicky_message.id
-            
-        except Exception as e:
-            logger.error(f"Error al guardar conversación: {e}")
-            return None, None
-    
-    def get_status(self) -> VickyStatus:
-        """Obtiene el estado actual de Vicky"""
-        uptime = int((datetime.now() - self.start_time).total_seconds())
-        avg_response_time = (
-            self.total_response_time / self.total_requests 
-            if self.total_requests > 0 else 0.0
-        )
-        
-        return VickyStatus(
-            status="online",
-            version="1.0.0",
-            uptime=uptime,
-            loaded_models=self.loaded_models,
-            memory_usage={
-                "total": 16384,
-                "used": 8192,
-                "free": 8192
-            },
-            processing_stats={
-                "total_requests": self.total_requests,
-                "average_response_time": avg_response_time,
-                "requests_per_minute": self.total_requests / max(uptime / 60, 1)
-            },
-            hemisphere_balance=self.current_balance,
-            active_conversations=25,  # Simulado
-            total_messages=self.total_requests * 2,  # Usuario + Vicky
-            average_response_time=avg_response_time
-        )
+# Cerebro de Vicky con gestión dinámica de recursos
+vicky_brain = None
 
-# Instancia global del cerebro de Vicky
-vicky_brain = VickyBrain()
+async def get_vicky_brain():
+    """Obtiene o inicializa el cerebro de Vicky de forma asíncrona"""
+    global vicky_brain
+    if vicky_brain is None and ADVANCED_BRAIN_AVAILABLE:
+        try:
+            vicky_brain = VickyBrain()
+            success = await vicky_brain.initialize()
+            if success:
+                logger.info("🧠✨ CEREBRO DINÁMICO DE VICKY ACTIVADO EXITOSAMENTE")
+                logger.info(f"🎯 Balance inicial: {vicky_brain.technical_ratio:.0%} técnico, {vicky_brain.emotional_ratio:.0%} emocional")
+                logger.info(f"💾 Gestión dinámica de recursos: 7GB VRAM disponibles para Vicky")
+            else:
+                logger.error("❌ Fallo en inicialización del cerebro de Vicky")
+                vicky_brain = None
+        except Exception as e:
+            logger.error(f"❌ Error al inicializar cerebro de Vicky: {e}")
+            vicky_brain = None
+    return vicky_brain
+
+# Solo si realmente no se puede cargar, crear instancia de emergencia        
+if not ADVANCED_BRAIN_AVAILABLE:
+    logger.error("❌ CEREBRO DE VICKY NO DISPONIBLE - Creando instancia mínima de emergencia")
+    
+    class EmergencyBrain:
+        def __init__(self):
+            self.start_time = datetime.now()
+            self.current_balance = {"technical": 0.6, "emotional": 0.4}
+            
+        async def process_message(self, message: str, context: Dict[str, Any] = None, user_id: str = None) -> Dict[str, Any]:
+            return {
+                "response": "⚠️ Cerebro de Vicky no disponible. Verifica las dependencias e importaciones.",
+                "confidence": 0.0,
+                "processing_time": 0.001,
+                "hemisphere_balance": self.current_balance,
+                "metadata": {"error": True, "brain_type": "emergency_fallback"}
+            }
+            
+        def get_status(self):
+            uptime = int((datetime.now() - self.start_time).total_seconds())
+            return VickyStatus(
+                status="error",
+                version="emergency-fallback",
+                uptime=uptime,
+                loaded_models=[],
+                memory_usage={"total": 0, "used": 0},
+                processing_stats={"total_messages": 0, "avg_time": 0},
+                hemisphere_balance=HemisphereBalance(**self.current_balance),
+                active_conversations=0,
+                total_messages=0,
+                average_response_time=0.0
+            )
+    
+    vicky_brain = EmergencyBrain()
+    logger.warning("⚠️ Usando cerebro de emergencia - funcionalidad limitada")
 
 # Endpoints de Vicky AI
+
+@router.get("/ping")
+async def vicky_ping():
+    """Endpoint simple de prueba para verificar que el router funciona"""
+    return {"message": "🎭 Vicky router funcionando!", "timestamp": datetime.now().isoformat()}
 
 @router.post("/process", response_model=VickyResponse)
 async def process_vicky_request(
@@ -360,7 +212,70 @@ async def process_vicky_request(
     logger.info(f"Solicitud recibida para Vicky: {request.message[:50]}...")
     
     try:
-        response = await vicky_brain.process_message(request, current_user, db)
+        start_time = time.time()
+        
+        # Configurar contexto para Vicky
+        context = request.context or {}
+        if current_user:
+            context.update({
+                "user_id": current_user.id,
+                "username": current_user.username,
+                "user_email": current_user.email
+            })
+        
+# Esta línea ya no es necesaria porque se maneja en get_vicky_brain()
+        
+        # Obtener cerebro de Vicky
+        brain = await get_vicky_brain()
+        
+        if brain:
+            # Ajustar balance si se especifica
+            if request.hemisphere_balance:
+                await brain.adjust_hemisphere_balance(request.hemisphere_balance.technical)
+            
+            # Procesar con cerebro inteligente
+            brain_response = await brain.process_query(
+                query=request.message,
+                context=context
+            )
+            
+            result = {
+                "response": brain_response.content,
+                "metadata": {
+                    "model_used": brain_response.model_used,
+                    "complexity": brain_response.complexity.value,
+                    "hemisphere": brain_response.hemisphere,
+                    "confidence": brain_response.confidence,
+                    "processing_time": brain_response.response_time,
+                    "resources_used": brain_response.resources_used
+                }
+            }
+        else:
+            # Fallback a cerebro de emergencia
+            if not ADVANCED_BRAIN_AVAILABLE:
+                result = await vicky_brain.process_message(
+                    message=request.message,
+                    context=context,
+                    user_id=str(current_user.id) if current_user else request.user_id
+                )
+            else:
+                result = {
+                    "response": "🔄 Vicky se está inicializando. Por favor intenta de nuevo en unos momentos.",
+                    "metadata": {"status": "initializing"}
+                }
+        
+        processing_time = time.time() - start_time
+        
+        # Crear respuesta
+        response = VickyResponse(
+            response=result.get("response", "Error en la respuesta"),
+            context=result.get("context", context),
+            metadata=result.get("metadata", {}),
+            processing_time=processing_time,
+            hemisphere_balance=HemisphereBalance(**result.get("hemisphere_balance", vicky_brain.current_balance)),
+            confidence=result.get("confidence", 0.8),
+            tokens_used=result.get("tokens_used", len(request.message.split()))
+        )
         
         # Tarea en segundo plano para analytics
         background_tasks.add_task(
@@ -368,16 +283,16 @@ async def process_vicky_request(
             request.message,
             response.response,
             current_user.id if current_user else None,
-            response.processing_time
+            processing_time
         )
         
         return response
         
     except Exception as e:
-        logger.error(f"Error al procesar solicitud para Vicky: {e}")
+        logger.error(f"Error al procesar solicitud para Vicky: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al procesar la solicitud"
+            detail=f"Error al procesar la solicitud: {str(e)}"
         )
 
 @router.post("/stream")
@@ -391,21 +306,43 @@ async def stream_vicky_response(
     """
     async def generate_stream():
         try:
+            # Configurar contexto
+            context = request.context or {}
+            if current_user:
+                context.update({
+                    "user_id": current_user.id,
+                    "username": current_user.username,
+                    "user_email": current_user.email
+                })
+            
+            # Ajustar balance de hemisferios si se especifica
+            if request.hemisphere_balance:
+                vicky_brain.current_balance = {
+                    "technical": request.hemisphere_balance.technical,
+                    "emotional": request.hemisphere_balance.emotional
+                }
+            
             # Procesar mensaje
-            response = await vicky_brain.process_message(request, current_user, db)
+            result = await vicky_brain.process_message(
+                message=request.message,
+                context=context,
+                user_id=str(current_user.id) if current_user else request.user_id
+            )
             
             # Simular streaming dividiendo la respuesta
-            words = response.response.split()
+            response_text = result.get("response", "Error en la respuesta")
+            words = response_text.split()
             for i, word in enumerate(words):
                 chunk = VickyStreamChunk(
                     chunk=word + " ",
                     is_final=(i == len(words) - 1),
-                    metadata=response.metadata if i == len(words) - 1 else None
+                    metadata=result.get("metadata", {}) if i == len(words) - 1 else None
                 )
                 yield f"data: {chunk.json()}\n\n"
                 await asyncio.sleep(0.05)  # Simular delay de streaming
                 
         except Exception as e:
+            logger.error(f"Error en streaming de Vicky: {e}", exc_info=True)
             error_chunk = VickyStreamChunk(
                 chunk=f"Error: {str(e)}",
                 is_final=True,
@@ -467,7 +404,10 @@ async def update_vicky_config(
         logger.info(f"Configuración de Vicky actualizada para usuario {current_user.id}")
         
         # Actualizar balance global si es necesario
-        vicky_brain.current_balance = config.hemisphere_balance
+        vicky_brain.current_balance = {
+            "technical": config.hemisphere_balance.technical,
+            "emotional": config.hemisphere_balance.emotional
+        }
         
         return config
         
@@ -487,13 +427,16 @@ async def adjust_hemisphere_balance(
     Ajusta el balance de hemisferios de Vicky
     """
     try:
-        vicky_brain.current_balance = balance
-        
-        return {
-            "success": True,
-            "message": f"Balance ajustado: {balance.technical:.1%} técnico, {balance.emotional:.1%} emocional",
-            "new_balance": balance.dict()
-        }
+        brain = await get_vicky_brain()
+        if brain:
+            await brain.adjust_hemisphere_balance(balance.technical)
+            return {
+                "success": True,
+                "message": f"Balance ajustado: {balance.technical:.1%} técnico, {balance.emotional:.1%} emocional",
+                "new_balance": balance.dict()
+            }
+        else:
+            return {"success": False, "message": "Cerebro de Vicky no disponible"}
         
     except Exception as e:
         logger.error(f"Error al ajustar balance de hemisferios: {e}")
@@ -502,50 +445,134 @@ async def adjust_hemisphere_balance(
             detail="Error al ajustar el balance"
         )
 
+@router.post("/personality", response_model=Dict[str, Any])
+async def set_vicky_personality(
+    personality: str = Body(..., embed=True),
+    current_user: UserDB = Depends(get_current_active_user)
+):
+    """
+    Cambia la personalidad de Vicky
+    Personalidades disponibles: balanced, technical, creative, analytical, empathetic, supervisor
+    """
+    try:
+        brain = await get_vicky_brain()
+        if brain:
+            success = brain.set_personality(personality)
+            if success:
+                return {
+                    "success": True,
+                    "message": f"Personalidad cambiada a '{personality}'",
+                    "current_personality": personality,
+                    "technical_ratio": brain.technical_ratio,
+                    "emotional_ratio": brain.emotional_ratio
+                }
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Personalidad '{personality}' no válida. Disponibles: balanced, technical, creative, analytical, empathetic, supervisor"
+                )
+        else:
+            return {"success": False, "message": "Cerebro de Vicky no disponible"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al cambiar personalidad: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al cambiar la personalidad"
+        )
+
+@router.get("/supervision-report", response_model=Dict[str, Any])
+async def get_vicky_supervision_report(
+    current_user: UserDB = Depends(get_current_active_user)
+):
+    """
+    Obtiene reporte de supervisión técnica de Vicky
+    """
+    try:
+        brain = await get_vicky_brain()
+        if brain:
+            report = brain.get_supervision_report()
+            return {
+                "success": True,
+                "report": report,
+                "generated_at": time.time()
+            }
+        else:
+            return {"success": False, "message": "Cerebro de Vicky no disponible"}
+        
+    except Exception as e:
+        logger.error(f"Error al obtener reporte de supervisión: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al obtener el reporte"
+        )
+
 @router.get("/personalities")
 async def get_available_personalities():
     """
-    Obtiene las personalidades disponibles para Vicky
+    Obtiene las personalidades disponibles para Vicky (JSON + hardcodeadas)
     """
-    personalities = [
-        {
-            "id": "balanced",
-            "name": "Equilibrada",
-            "description": "Balance perfecto entre lógica y emoción",
-            "hemisphere_balance": {"technical": 0.6, "emotional": 0.4},
-            "best_for": ["conversación general", "consultas mixtas"]
-        },
-        {
-            "id": "technical",
-            "name": "Técnica",
-            "description": "Enfocada en soluciones técnicas y lógicas",
-            "hemisphere_balance": {"technical": 0.8, "emotional": 0.2},
-            "best_for": ["programación", "resolución de problemas", "análisis"]
-        },
-        {
-            "id": "creative",
-            "name": "Creativa",
-            "description": "Imaginativa y orientada a la innovación",
-            "hemisphere_balance": {"technical": 0.4, "emotional": 0.6},
-            "best_for": ["brainstorming", "escritura creativa", "arte"]
-        },
-        {
-            "id": "analytical",
-            "name": "Analítica",
-            "description": "Basada en datos y análisis profundo",
-            "hemisphere_balance": {"technical": 0.9, "emotional": 0.1},
-            "best_for": ["análisis de datos", "investigación", "estadísticas"]
-        },
-        {
-            "id": "empathetic",
-            "name": "Empática",
-            "description": "Comprensiva y emocionalmente inteligente",
-            "hemisphere_balance": {"technical": 0.2, "emotional": 0.8},
-            "best_for": ["apoyo emocional", "consejería", "conversación personal"]
+    try:
+        brain = await get_vicky_brain()
+        if brain:
+            personalities_data = brain.get_available_personalities()
+            
+            # Formatear respuesta compatible con frontend
+            formatted_personalities = []
+            
+            # Agregar personalidades JSON
+            for name, personality in personalities_data["json_personalities"].items():
+                formatted_personalities.append({
+                    "id": name,
+                    "name": personality["display_name"],
+                    "description": personality["description"],
+                    "hemisphere_balance": {
+                        "technical": personality["technical"], 
+                        "emotional": personality["emotional"]
+                    },
+                    "specialization": personality["specialization"],
+                    "characteristics": personality["characteristics"],
+                    "best_for": personality["use_cases"],
+                    "source": "json",
+                    "type": "advanced"
+                })
+            
+            # Agregar personalidades hardcodeadas
+            for name, personality in personalities_data["hardcoded_personalities"].items():
+                formatted_personalities.append({
+                    "id": name,
+                    "name": name.title(),
+                    "description": personality["description"],
+                    "hemisphere_balance": {
+                        "technical": personality["technical"],
+                        "emotional": personality["emotional"]
+                    },
+                    "source": "hardcoded",
+                    "type": "basic"
+                })
+            
+            return {
+                "personalities": formatted_personalities,
+                "current_personality": personalities_data["current_personality"],
+                "total_json_personalities": len(personalities_data["json_personalities"]),
+                "total_hardcoded_personalities": len(personalities_data["hardcoded_personalities"]),
+                "summary": personalities_data["personality_loader_summary"]
+            }
+        else:
+            # Fallback si no hay cerebro disponible
+            return {
+                "personalities": [],
+                "error": "Cerebro de Vicky no disponible"
+            }
+        
+    except Exception as e:
+        logger.error(f"Error obteniendo personalidades: {e}")
+        return {
+            "personalities": [],
+            "error": str(e)
         }
-    ]
-    
-    return {"personalities": personalities}
 
 @router.get("/modes")
 async def get_available_modes():
@@ -976,4 +1003,217 @@ async def vicky_experimental_analysis(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error durante el análisis experimental"
         )
+
+@router.get("/test", tags=["Vicky AI"])
+async def vicky_test():
+    """
+    Endpoint de prueba público para Vicky AI - SIN AUTENTICACIÓN
+    """
+    try:
+        # Probar con el cerebro dinámico
+        brain = await get_vicky_brain()
+        
+        if brain:
+            # Prueba técnica (modo supervisor)
+            tech_response = await brain.process_query("status del sistema", {"mode": "supervision"})
+            
+            # Prueba emocional (saludo humano)
+            human_response = await brain.process_query("hola Vicky", {"user_id": "test_user"})
+            
+            return {
+                "success": True,
+                "brain_type": "dynamic_resource_manager",
+                "tests": {
+                    "technical_mode": {
+                        "query": "status del sistema",
+                        "response": tech_response.content[:200] + "...",
+                        "model_used": tech_response.model_used,
+                        "hemisphere": tech_response.hemisphere,
+                        "complexity": tech_response.complexity.value
+                    },
+                    "emotional_mode": {
+                        "query": "hola Vicky",
+                        "response": human_response.content[:200] + "...",
+                        "model_used": human_response.model_used,
+                        "hemisphere": human_response.hemisphere,
+                        "complexity": human_response.complexity.value
+                    }
+                },
+                "system_info": {
+                    "current_mode": "emotional" if brain.is_interacting_with_human else "technical",
+                    "technical_ratio": brain.technical_ratio,
+                    "emotional_ratio": brain.emotional_ratio,
+                    "supervision_events": len(brain.technical_memory),
+                    "resource_manager_active": brain.resource_manager.monitoring
+                },
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            return {
+                "success": False,
+                "error": "Cerebro de Vicky no inicializado",
+                "brain_type": "none",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+    except Exception as e:
+        logger.error(f"Error en test de Vicky: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "brain_type": "error",
+            "timestamp": datetime.now().isoformat()
+        }
+
+@router.post("/test-interaction", tags=["Vicky AI"])
+async def test_vicky_interaction(
+    message: str = Body(..., embed=True)
+):
+    """
+    Endpoint de prueba para interactuar con Vicky - SIN AUTENTICACIÓN
+    """
+    try:
+        brain = await get_vicky_brain()
+        
+        if brain:
+            response = await brain.process_query(message, {"user_id": "test_user", "test_mode": True})
+            
+            return {
+                "success": True,
+                "query": message,
+                "response": response.content,
+                "metadata": {
+                    "model_used": response.model_used,
+                    "hemisphere": response.hemisphere,
+                    "complexity": response.complexity.value,
+                    "confidence": response.confidence,
+                    "response_time": response.response_time
+                },
+                "vicky_state": {
+                    "current_mode": "emotional" if brain.is_interacting_with_human else "technical",
+                    "current_personality": brain.current_personality,
+                    "active_personality_config": brain.active_personality_config.display_name if brain.active_personality_config else "Hardcoded",
+                    "technical_ratio": brain.technical_ratio,
+                    "emotional_ratio": brain.emotional_ratio,
+                    "supervision_events": len(brain.technical_memory)
+                },
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            return {
+                "success": False,
+                "error": "Cerebro de Vicky no disponible",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+    except Exception as e:
+        logger.error(f"Error en interacción de prueba: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@router.get("/personality-details/{personality_name}", tags=["Vicky AI"])
+async def get_personality_details(personality_name: str):
+    """
+    Obtiene detalles completos de una personalidad específica incluyendo datos JSON raw
+    """
+    try:
+        brain = await get_vicky_brain()
+        if brain:
+            # Obtener personalidad específica
+            personality = brain.personality_loader.get_personality(personality_name)
+            raw_data = brain.personality_loader.get_raw_personality_data(personality_name)
+            
+            if personality:
+                return {
+                    "success": True,
+                    "personality": {
+                        "name": personality.name,
+                        "display_name": personality.display_name,
+                        "description": personality.description,
+                        "technical_ratio": personality.technical_ratio,
+                        "emotional_ratio": personality.emotional_ratio,
+                        "specialization": personality.specialization,
+                        "characteristics": personality.characteristics,
+                        "use_cases": personality.use_cases,
+                        "model_preferences": personality.model_preferences,
+                        "response_style": personality.response_style,
+                        "json_source": personality.json_source
+                    },
+                    "raw_json_summary": {
+                        "nombre": raw_data.get("nombre", "N/A") if raw_data else "N/A",
+                        "version": raw_data.get("version", "N/A") if raw_data else "N/A",
+                        "objetivo": raw_data.get("objetivo", "N/A") if raw_data else "N/A",
+                        "principios_diseno": raw_data.get("principios_diseno", [])[:5] if raw_data else [],
+                        "modulos_count": len(raw_data.get("modulos", [])) if raw_data else 0,
+                        "file_size_kb": len(str(raw_data)) // 1024 if raw_data else 0
+                    } if raw_data else None,
+                    "is_currently_active": brain.current_personality == personality_name,
+                    "timestamp": datetime.now().isoformat()
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": f"Personalidad '{personality_name}' no encontrada",
+                    "available_personalities": brain.personality_loader.get_personality_names()
+                }
+        else:
+            return {
+                "success": False,
+                "error": "Cerebro de Vicky no disponible"
+            }
+    except Exception as e:
+        logger.error(f"Error obteniendo detalles de personalidad: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@router.get("/json-personalities-summary", tags=["Vicky AI"])
+async def get_json_personalities_summary():
+    """
+    Obtiene resumen de todas las personalidades JSON disponibles
+    """
+    try:
+        brain = await get_vicky_brain()
+        if brain:
+            summary = brain.personality_loader.get_summary()
+            all_personalities = brain.personality_loader.get_all_personalities()
+            
+            personalities_list = []
+            for name, personality in all_personalities.items():
+                personalities_list.append({
+                    "name": name,
+                    "display_name": personality.display_name,
+                    "specialization": personality.specialization,
+                    "technical_ratio": personality.technical_ratio,
+                    "emotional_ratio": personality.emotional_ratio,
+                    "json_source": personality.json_source,
+                    "characteristics_count": len(personality.characteristics),
+                    "use_cases_count": len(personality.use_cases)
+                })
+            
+            return {
+                "success": True,
+                "summary": summary,
+                "personalities": personalities_list,
+                "currently_active": brain.current_personality,
+                "message": f"🎭 {len(all_personalities)} personalidades JSON cargadas exitosamente",
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            return {
+                "success": False,
+                "error": "Cerebro de Vicky no disponible"
+            }
+    except Exception as e:
+        logger.error(f"Error obteniendo resumen de personalidades JSON: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
 

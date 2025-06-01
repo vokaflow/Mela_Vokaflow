@@ -369,7 +369,7 @@ async def create_webhook(webhook_create: WebhookCreate):
             successful_deliveries=0,
             failed_deliveries=0,
             user_id="current_user_id",  # En producción sería el usuario actual
-            metadata=webhook_create.metadata or {
+            metadata=webhook_create.msg_metadata or {
                 "created_by": "api",
                 "created_at": datetime.now().isoformat()
             }

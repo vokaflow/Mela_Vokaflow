@@ -1,524 +1,630 @@
-from fastapi import APIRouter, HTTPException, Depends, Query, Path, Body
-from typing import List, Dict, Any, Optional
-import uuid
-from datetime import datetime, timedelta
-import random
+#!/usr/bin/env python3
+"""
+💬 Router de Conversaciones - VokaFlow Enterprise
+API completa para gestión de conversaciones y mensajes
+"""
 
-from ..models.conversations_model import (
-    Conversation, ConversationCreate, ConversationUpdate, ConversationSummary,
-    Message, MessageCreate, MessageResponse, ConversationResponse,
-    ConversationStats, ConversationExport, ConversationSearch,
-    ConversationType, ConversationStatus, MessageRole
+import logging
+from datetime import datetime
+from typing import List, Optional, Dict, Any
+from fastapi import APIRouter, HTTPException, Depends, status, Query, BackgroundTasks
+from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import desc, or_, and_, func
+
+# Importar dependencias del sistema de autenticación
+try:
+    from ..auth_robust import auth_manager, get_current_user
+except ImportError:
+    # Fallback si no está disponible
+    def get_current_user():
+        return {"id": 1, "username": "admin"}
+
+# Importar modelos de mensajería
+from ..messaging.models import (
+    Conversation, Message, ConversationParticipant,
+    ConversationCreate, ConversationUpdate, ConversationResponse,
+    MessageCreate, MessageResponse, ParticipantAdd, MessageSearch,
+    ConversationType, MessageType, MessageStatus,
+    WebSocketMessage, TypingIndicator
 )
 
-router = APIRouter(tags=["Conversations"])
-
-# Simulación de base de datos en memoria
-conversations_db = {
-    "conversations": {},
-    "user_conversations": {},  # user_id -> [conversation_ids]
-    "stats": {
-        "total_conversations": 0,
-        "total_messages": 0
-    }
-}
-
-def generate_conversation_id():
-    """Generar ID único para conversación"""
-    return f"conv_{uuid.uuid4().hex[:12]}"
-
-def generate_message_id():
-    """Generar ID único para mensaje"""
-    return f"msg_{uuid.uuid4().hex[:8]}"
-
-def get_user_conversations(user_id: str) -> List[str]:
-    """Obtener IDs de conversaciones de un usuario"""
-    return conversations_db["user_conversations"].get(user_id, [])
-
-def add_user_conversation(user_id: str, conversation_id: str):
-    """Agregar conversación a un usuario"""
-    if user_id not in conversations_db["user_conversations"]:
-        conversations_db["user_conversations"][user_id] = []
-    if conversation_id not in conversations_db["user_conversations"][user_id]:
-        conversations_db["user_conversations"][user_id].append(conversation_id)
-
-@router.get("/list", response_model=ConversationResponse)
-async def list_conversations(
-    user_id: str = Query(..., description="ID del usuario"),
-    status: Optional[ConversationStatus] = Query(None, description="Filtrar por estado"),
-    type: Optional[ConversationType] = Query(None, description="Filtrar por tipo"),
-    limit: int = Query(20, ge=1, le=100, description="Número máximo de conversaciones"),
-    offset: int = Query(0, ge=0, description="Offset para paginación"),
-    include_messages: bool = Query(False, description="Incluir mensajes en la respuesta")
-):
-    """
-    📋 Listar conversaciones del usuario
+# Importar base de datos
+try:
+    from ..database import get_db, SessionLocal
+except ImportError:
+    # Crear una sesión básica si no está disponible
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
     
-    Obtiene lista de conversaciones:
-    - Filtros por estado y tipo
-    - Paginación
-    - Opción de incluir mensajes
-    - Ordenado por última actividad
-    """
-    try:
-        # Generar conversaciones de ejemplo si no existen
-        if user_id not in conversations_db["user_conversations"]:
-            sample_conversations = []
-            for i in range(15):
-                conv_id = generate_conversation_id()
-                conversation = Conversation(
-                    id=conv_id,
-                    title=f"Conversación {i+1}",
-                    description=f"Descripción de la conversación {i+1}",
-                    type=random.choice(list(ConversationType)),
-                    status=random.choice(list(ConversationStatus)),
-                    user_id=user_id,
-                    participants=[user_id],
-                    created_at=datetime.now() - timedelta(days=random.randint(0, 30)),
-                    updated_at=datetime.now() - timedelta(hours=random.randint(0, 72)),
-                    message_count=random.randint(1, 50),
-                    tags=[f"tag{random.randint(1,5)}" for _ in range(random.randint(0,3))]
-                )
-                
-                # Agregar algunos mensajes de ejemplo
-                for j in range(random.randint(1, 5)):
-                    msg_id = generate_message_id()
-                    message = Message(
-                        id=msg_id,
-                        role=random.choice([MessageRole.USER, MessageRole.ASSISTANT]),
-                        content=f"Mensaje {j+1} en conversación {i+1}",
-                        timestamp=datetime.now() - timedelta(hours=random.randint(0, 48))
-                    )
-                    conversation.messages.append(message)
-                
-                if conversation.messages:
-                    conversation.last_message_at = max(msg.timestamp for msg in conversation.messages)
-                
-                conversations_db["conversations"][conv_id] = conversation.dict()
-                add_user_conversation(user_id, conv_id)
-                sample_conversations.append(conversation)
-        
-        # Obtener conversaciones del usuario
-        user_conv_ids = get_user_conversations(user_id)
-        user_conversations = []
-        
-        for conv_id in user_conv_ids:
-            if conv_id in conversations_db["conversations"]:
-                conv_data = conversations_db["conversations"][conv_id]
-                conversation = Conversation(**conv_data)
-                
-                # Aplicar filtros
-                if status and conversation.status != status:
-                    continue
-                if type and conversation.type != type:
-                    continue
-                
-                # Si no incluir mensajes, crear resumen
-                if not include_messages:
-                    last_message_preview = None
-                    if conversation.messages:
-                        last_message_preview = conversation.messages[-1].content[:100] + "..."
-                    
-                    summary = ConversationSummary(
-                        id=conversation.id,
-                        title=conversation.title,
-                        type=conversation.type,
-                        status=conversation.status,
-                        message_count=conversation.message_count,
-                        last_message_at=conversation.last_message_at,
-                        last_message_preview=last_message_preview,
-                        unread_count=random.randint(0, 5),
-                        created_at=conversation.created_at
-                    )
-                    user_conversations.append(summary)
-                else:
-                    user_conversations.append(conversation)
-        
-        # Ordenar por última actividad
-        user_conversations.sort(
-            key=lambda x: x.last_message_at or x.created_at, 
-            reverse=True
-        )
-        
-        # Aplicar paginación
-        total = len(user_conversations)
-        paginated_conversations = user_conversations[offset:offset + limit]
-        
-        return ConversationResponse(
-            message=f"Retrieved {len(paginated_conversations)} conversations",
-            data={
-                "conversations": paginated_conversations,
-                "total": total,
-                "limit": limit,
-                "offset": offset,
-                "has_more": offset + limit < total
-            }
-        )
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving conversations: {str(e)}")
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./vokaflow_messaging.db"
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    
+    def get_db():
+        db = SessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
 
-@router.post("/create", response_model=ConversationResponse)
+logger = logging.getLogger(__name__)
+
+router = APIRouter()
+
+# ============================================================================
+# ENDPOINTS DE CONVERSACIONES
+# ============================================================================
+
+@router.post("/conversations", response_model=ConversationResponse, status_code=status.HTTP_201_CREATED)
 async def create_conversation(
-    conversation_data: ConversationCreate,
-    user_id: str = Query(..., description="ID del usuario creador")
+    conversation: ConversationCreate,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """
-    ➕ Crear nueva conversación
-    
-    Crea una nueva conversación:
-    - Asigna ID único
-    - Configura participantes
-    - Establece configuraciones iniciales
-    - Agrega etiquetas
-    """
+    """Crear nueva conversación"""
     try:
-        conv_id = generate_conversation_id()
-        
         # Crear conversación
-        conversation = Conversation(
-            id=conv_id,
-            title=conversation_data.title,
-            description=conversation_data.description,
-            type=conversation_data.type,
-            status=ConversationStatus.ACTIVE,
-            user_id=user_id,
-            participants=[user_id] + conversation_data.participants,
-            settings=conversation_data.settings or {},
-            tags=conversation_data.tags
+        db_conversation = Conversation(
+            title=conversation.title,
+            description=conversation.description,
+            type=conversation.type,
+            created_by=current_user.get("id", 1),
+            msg_metadata=conversation.msg_metadata
         )
         
-        # Guardar en base de datos
-        conversations_db["conversations"][conv_id] = conversation.dict()
-        add_user_conversation(user_id, conv_id)
+        db.add(db_conversation)
+        db.commit()
+        db.refresh(db_conversation)
         
-        # Agregar a participantes
-        for participant_id in conversation_data.participants:
-            add_user_conversation(participant_id, conv_id)
+        # Añadir participantes
+        participants_to_add = conversation.participants or [current_user.get("id", 1)]
+        if current_user.get("id", 1) not in participants_to_add:
+            participants_to_add.append(current_user.get("id", 1))
         
-        # Actualizar estadísticas
-        conversations_db["stats"]["total_conversations"] += 1
+        for user_id in participants_to_add:
+            participant = ConversationParticipant(
+                conversation_id=db_conversation.id,
+                user_id=user_id,
+                role="admin" if user_id == current_user.get("id", 1) else "member"
+            )
+            db.add(participant)
         
-        return ConversationResponse(
-            message="Conversation created successfully",
-            data=conversation
+        db.commit()
+        
+        # Preparar respuesta
+        response = ConversationResponse(
+            id=db_conversation.id,
+            title=db_conversation.title,
+            description=db_conversation.description,
+            type=db_conversation.type,
+            created_at=db_conversation.created_at,
+            updated_at=db_conversation.updated_at,
+            created_by=db_conversation.created_by,
+            is_active=db_conversation.is_active,
+            metadata=db_conversation.msg_metadata,
+            message_count=0,
+            participants=participants_to_add
         )
+        
+        logger.info(f"✅ Conversación creada: {db_conversation.title} (ID: {db_conversation.id})")
+        return response
         
     except Exception as e:
+        logger.error(f"❌ Error creando conversación: {e}")
+        db.rollback()
         raise HTTPException(status_code=500, detail=f"Error creating conversation: {str(e)}")
 
-@router.get("/{conversation_id}", response_model=ConversationResponse)
+@router.get("/conversations", response_model=List[ConversationResponse])
+async def get_conversations(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, le=100),
+    conversation_type: Optional[ConversationType] = None,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Obtener conversaciones del usuario"""
+    try:
+        query = db.query(Conversation).join(ConversationParticipant).filter(
+            ConversationParticipant.user_id == current_user.get("id", 1),
+            ConversationParticipant.is_active == True,
+            Conversation.is_active == True
+        )
+        
+        if conversation_type:
+            query = query.filter(Conversation.type == conversation_type)
+        
+        conversations = query.order_by(desc(Conversation.updated_at)).offset(skip).limit(limit).all()
+        
+        results = []
+        for conv in conversations:
+            # Contar mensajes
+            message_count = db.query(func.count(Message.id)).filter(Message.conversation_id == conv.id).scalar()
+            
+            # Último mensaje
+            last_message = db.query(Message).filter(Message.conversation_id == conv.id).order_by(desc(Message.created_at)).first()
+            last_message_response = None
+            if last_message:
+                last_message_response = MessageResponse(
+                    id=last_message.id,
+                    conversation_id=last_message.conversation_id,
+                    user_id=last_message.user_id,
+                    content=last_message.content,
+                    message_type=last_message.message_type,
+                    status=last_message.status,
+                    created_at=last_message.created_at,
+                    updated_at=last_message.updated_at,
+                    reply_to_id=last_message.reply_to_id,
+                    metadata=last_message.msg_metadata
+                )
+            
+            # Participantes
+            participants = db.query(ConversationParticipant.user_id).filter(
+                ConversationParticipant.conversation_id == conv.id,
+                ConversationParticipant.is_active == True
+            ).all()
+            participant_ids = [p.user_id for p in participants]
+            
+            results.append(ConversationResponse(
+                id=conv.id,
+                title=conv.title,
+                description=conv.description,
+                type=conv.type,
+                created_at=conv.created_at,
+                updated_at=conv.updated_at,
+                created_by=conv.created_by,
+                is_active=conv.is_active,
+                metadata=conv.msg_metadata,
+                message_count=message_count,
+                last_message=last_message_response,
+                participants=participant_ids
+            ))
+        
+        return results
+        
+    except Exception as e:
+        logger.error(f"❌ Error obteniendo conversaciones: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching conversations: {str(e)}")
+
+@router.get("/conversations/{conversation_id}", response_model=ConversationResponse)
 async def get_conversation(
-    conversation_id: str = Path(..., description="ID de la conversación"),
-    user_id: str = Query(..., description="ID del usuario"),
-    include_messages: bool = Query(True, description="Incluir mensajes"),
-    message_limit: int = Query(50, ge=1, le=200, description="Límite de mensajes")
+    conversation_id: int,
+    include_messages: bool = Query(False),
+    message_limit: int = Query(50, le=200),
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """
-    🔍 Obtener conversación específica
-    
-    Obtiene detalles completos de una conversación:
-    - Validación de permisos
-    - Mensajes con paginación
-    - Metadatos completos
-    - Información de participantes
-    """
+    """Obtener conversación específica"""
     try:
-        if conversation_id not in conversations_db["conversations"]:
+        # Verificar acceso
+        participant = db.query(ConversationParticipant).filter(
+            ConversationParticipant.conversation_id == conversation_id,
+            ConversationParticipant.user_id == current_user.get("id", 1),
+            ConversationParticipant.is_active == True
+        ).first()
+        
+        if not participant:
+            raise HTTPException(status_code=404, detail="Conversation not found or access denied")
+        
+        conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
+        if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
         
-        conv_data = conversations_db["conversations"][conversation_id]
-        conversation = Conversation(**conv_data)
+        # Contar mensajes
+        message_count = db.query(func.count(Message.id)).filter(Message.conversation_id == conversation_id).scalar()
         
-        # Validar permisos
-        if user_id not in conversation.participants:
-            raise HTTPException(status_code=403, detail="Access denied to this conversation")
+        # Último mensaje
+        last_message = db.query(Message).filter(Message.conversation_id == conversation_id).order_by(desc(Message.created_at)).first()
+        last_message_response = None
+        if last_message:
+            last_message_response = MessageResponse(
+                id=last_message.id,
+                conversation_id=last_message.conversation_id,
+                user_id=last_message.user_id,
+                content=last_message.content,
+                message_type=last_message.message_type,
+                status=last_message.status,
+                created_at=last_message.created_at,
+                updated_at=last_message.updated_at,
+                reply_to_id=last_message.reply_to_id,
+                metadata=last_message.msg_metadata
+            )
         
-        # Limitar mensajes si se solicita
-        if include_messages and len(conversation.messages) > message_limit:
-            conversation.messages = conversation.messages[-message_limit:]
-        elif not include_messages:
-            conversation.messages = []
+        # Participantes
+        participants = db.query(ConversationParticipant.user_id).filter(
+            ConversationParticipant.conversation_id == conversation_id,
+            ConversationParticipant.is_active == True
+        ).all()
+        participant_ids = [p.user_id for p in participants]
         
-        return ConversationResponse(
-            message="Conversation retrieved successfully",
-            data=conversation
+        response = ConversationResponse(
+            id=conversation.id,
+            title=conversation.title,
+            description=conversation.description,
+            type=conversation.type,
+            created_at=conversation.created_at,
+            updated_at=conversation.updated_at,
+            created_by=conversation.created_by,
+            is_active=conversation.is_active,
+            metadata=conversation.msg_metadata,
+            message_count=message_count,
+            last_message=last_message_response,
+            participants=participant_ids
         )
+        
+        return response
         
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving conversation: {str(e)}")
+        logger.error(f"❌ Error obteniendo conversación {conversation_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching conversation: {str(e)}")
 
-@router.post("/{conversation_id}/message", response_model=MessageResponse)
-async def send_message(
-    conversation_id: str = Path(..., description="ID de la conversación"),
-    user_id: str = Query(..., description="ID del usuario"),
-    message_data: MessageCreate = Body(..., description="Datos del mensaje")
-):
-    """
-    💬 Enviar mensaje a conversación
-    
-    Agrega un nuevo mensaje:
-    - Validación de permisos
-    - Generación de respuesta automática (si es assistant)
-    - Actualización de timestamps
-    - Conteo de tokens
-    """
-    try:
-        if conversation_id not in conversations_db["conversations"]:
-            raise HTTPException(status_code=404, detail="Conversation not found")
-        
-        conv_data = conversations_db["conversations"][conversation_id]
-        conversation = Conversation(**conv_data)
-        
-        # Validar permisos
-        if user_id not in conversation.participants:
-            raise HTTPException(status_code=403, detail="Access denied to this conversation")
-        
-        # Crear mensaje
-        msg_id = generate_message_id()
-        message = Message(
-            id=msg_id,
-            role=message_data.role,
-            content=message_data.content,
-            metadata=message_data.metadata or {},
-            attachments=message_data.attachments,
-            tokens=len(message_data.content.split()) * 1.3  # Estimación simple
-        )
-        
-        # Agregar mensaje a la conversación
-        conversation.messages.append(message)
-        conversation.message_count += 1
-        conversation.last_message_at = message.timestamp
-        conversation.updated_at = datetime.now()
-        
-        # Guardar cambios
-        conversations_db["conversations"][conversation_id] = conversation.dict()
-        conversations_db["stats"]["total_messages"] += 1
-        
-        # Generar respuesta automática si es mensaje de usuario
-        if message_data.role == MessageRole.USER and conversation.type == ConversationType.CHAT:
-            assistant_msg_id = generate_message_id()
-            assistant_message = Message(
-                id=assistant_msg_id,
-                role=MessageRole.ASSISTANT,
-                content=f"He recibido tu mensaje: '{message_data.content[:50]}...'. ¿En qué más puedo ayudarte?",
-                metadata={"auto_generated": True, "response_to": msg_id}
-            )
-            
-            conversation.messages.append(assistant_message)
-            conversation.message_count += 1
-            conversation.last_message_at = assistant_message.timestamp
-            
-            # Guardar con respuesta automática
-            conversations_db["conversations"][conversation_id] = conversation.dict()
-            conversations_db["stats"]["total_messages"] += 1
-        
-        return MessageResponse(
-            message="Message sent successfully",
-            data=message,
-            conversation_id=conversation_id
-        )
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error sending message: {str(e)}")
-
-@router.delete("/{conversation_id}", response_model=ConversationResponse)
-async def delete_conversation(
-    conversation_id: str = Path(..., description="ID de la conversación"),
-    user_id: str = Query(..., description="ID del usuario"),
-    permanent: bool = Query(False, description="Eliminación permanente")
-):
-    """
-    🗑️ Eliminar conversación
-    
-    Elimina o archiva una conversación:
-    - Validación de permisos (solo propietario)
-    - Eliminación suave (archivado) por defecto
-    - Opción de eliminación permanente
-    - Actualización de estadísticas
-    """
-    try:
-        if conversation_id not in conversations_db["conversations"]:
-            raise HTTPException(status_code=404, detail="Conversation not found")
-        
-        conv_data = conversations_db["conversations"][conversation_id]
-        conversation = Conversation(**conv_data)
-        
-        # Validar permisos (solo el propietario puede eliminar)
-        if conversation.user_id != user_id:
-            raise HTTPException(status_code=403, detail="Only the owner can delete this conversation")
-        
-        if permanent:
-            # Eliminación permanente
-            del conversations_db["conversations"][conversation_id]
-            
-            # Remover de todos los usuarios
-            for user_conv_list in conversations_db["user_conversations"].values():
-                if conversation_id in user_conv_list:
-                    user_conv_list.remove(conversation_id)
-            
-            conversations_db["stats"]["total_conversations"] -= 1
-            conversations_db["stats"]["total_messages"] -= conversation.message_count
-            
-            return ConversationResponse(
-                message="Conversation permanently deleted",
-                data={"conversation_id": conversation_id, "deleted": True}
-            )
-        else:
-            # Eliminación suave (archivar)
-            conversation.status = ConversationStatus.DELETED
-            conversation.updated_at = datetime.now()
-            conversations_db["conversations"][conversation_id] = conversation.dict()
-            
-            return ConversationResponse(
-                message="Conversation archived",
-                data=conversation
-            )
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error deleting conversation: {str(e)}")
-
-@router.put("/{conversation_id}", response_model=ConversationResponse)
+@router.put("/conversations/{conversation_id}", response_model=ConversationResponse)
 async def update_conversation(
-    conversation_id: str = Path(..., description="ID de la conversación"),
-    user_id: str = Query(..., description="ID del usuario"),
-    update_data: ConversationUpdate = Body(..., description="Datos de actualización")
+    conversation_id: int,
+    conversation_update: ConversationUpdate,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    """
-    ✏️ Actualizar conversación
-    
-    Actualiza propiedades de la conversación:
-    - Título y descripción
-    - Estado y participantes
-    - Configuraciones y etiquetas
-    - Validación de permisos
-    """
+    """Actualizar conversación"""
     try:
-        if conversation_id not in conversations_db["conversations"]:
+        # Verificar acceso de admin
+        participant = db.query(ConversationParticipant).filter(
+            ConversationParticipant.conversation_id == conversation_id,
+            ConversationParticipant.user_id == current_user.get("id", 1),
+            ConversationParticipant.role.in_(["admin", "moderator"]),
+            ConversationParticipant.is_active == True
+        ).first()
+        
+        if not participant:
+            raise HTTPException(status_code=403, detail="Permission denied")
+        
+        conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
+        if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
         
-        conv_data = conversations_db["conversations"][conversation_id]
-        conversation = Conversation(**conv_data)
+        # Actualizar campos
+        if conversation_update.title is not None:
+            conversation.title = conversation_update.title
+        if conversation_update.description is not None:
+            conversation.description = conversation_update.description
+        if conversation_update.msg_metadata is not None:
+            conversation.msg_metadata = conversation_update.msg_metadata
         
-        # Validar permisos
-        if user_id not in conversation.participants:
-            raise HTTPException(status_code=403, detail="Access denied to this conversation")
+        conversation.updated_at = datetime.utcnow()
         
-        # Solo el propietario puede cambiar ciertos campos
-        owner_only_fields = ["participants", "status"]
-        if conversation.user_id != user_id:
-            for field in owner_only_fields:
-                if getattr(update_data, field) is not None:
-                    raise HTTPException(
-                        status_code=403, 
-                        detail=f"Only the owner can modify {field}"
-                    )
+        db.commit()
+        db.refresh(conversation)
         
-        # Aplicar actualizaciones
-        update_dict = update_data.dict(exclude_unset=True)
-        for field, value in update_dict.items():
-            if value is not None:
-                setattr(conversation, field, value)
-        
-        conversation.updated_at = datetime.now()
-        
-        # Actualizar participantes si se modificaron
-        if update_data.participants is not None:
-            # Remover conversación de participantes anteriores
-            old_participants = set(conv_data["participants"])
-            new_participants = set(update_data.participants)
-            
-            removed_participants = old_participants - new_participants
-            added_participants = new_participants - old_participants
-            
-            for participant_id in removed_participants:
-                if participant_id in conversations_db["user_conversations"]:
-                    user_convs = conversations_db["user_conversations"][participant_id]
-                    if conversation_id in user_convs:
-                        user_convs.remove(conversation_id)
-            
-            for participant_id in added_participants:
-                add_user_conversation(participant_id, conversation_id)
-        
-        # Guardar cambios
-        conversations_db["conversations"][conversation_id] = conversation.dict()
-        
-        return ConversationResponse(
-            message="Conversation updated successfully",
-            data=conversation
-        )
+        return await get_conversation(conversation_id, current_user=current_user, db=db)
         
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"❌ Error actualizando conversación {conversation_id}: {e}")
+        db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating conversation: {str(e)}")
 
-# Endpoints adicionales útiles
+# ============================================================================
+# ENDPOINTS DE MENSAJES
+# ============================================================================
 
-@router.get("/stats/{user_id}", response_model=ConversationResponse)
-async def get_conversation_stats(user_id: str):
-    """Obtener estadísticas de conversaciones del usuario"""
+@router.post("/conversations/{conversation_id}/messages", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
+async def send_message(
+    conversation_id: int,
+    message: MessageCreate,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Enviar mensaje a conversación"""
     try:
-        user_conv_ids = get_user_conversations(user_id)
-        user_conversations = []
+        # Verificar acceso
+        participant = db.query(ConversationParticipant).filter(
+            ConversationParticipant.conversation_id == conversation_id,
+            ConversationParticipant.user_id == current_user.get("id", 1),
+            ConversationParticipant.is_active == True
+        ).first()
         
-        total_messages = 0
-        conversations_by_type = {}
-        conversations_by_status = {}
-        recent_activity = []
+        if not participant:
+            raise HTTPException(status_code=404, detail="Conversation not found or access denied")
         
-        for conv_id in user_conv_ids:
-            if conv_id in conversations_db["conversations"]:
-                conv_data = conversations_db["conversations"][conv_id]
-                conversation = Conversation(**conv_data)
-                user_conversations.append(conversation)
-                
-                total_messages += conversation.message_count
-                
-                # Contar por tipo
-                type_str = conversation.type.value
-                conversations_by_type[type_str] = conversations_by_type.get(type_str, 0) + 1
-                
-                # Contar por estado
-                status_str = conversation.status.value
-                conversations_by_status[status_str] = conversations_by_status.get(status_str, 0) + 1
-                
-                # Actividad reciente
-                if conversation.last_message_at:
-                    recent_activity.append({
-                        "conversation_id": conversation.id,
-                        "title": conversation.title,
-                        "last_activity": conversation.last_message_at,
-                        "message_count": conversation.message_count
-                    })
-        
-        # Ordenar actividad reciente
-        recent_activity.sort(key=lambda x: x["last_activity"], reverse=True)
-        recent_activity = recent_activity[:10]  # Top 10
-        
-        active_conversations = sum(1 for conv in user_conversations if conv.status == ConversationStatus.ACTIVE)
-        avg_messages = total_messages / len(user_conversations) if user_conversations else 0
-        
-        stats = ConversationStats(
-            total_conversations=len(user_conversations),
-            active_conversations=active_conversations,
-            total_messages=total_messages,
-            average_messages_per_conversation=avg_messages,
-            conversations_by_type=conversations_by_type,
-            conversations_by_status=conversations_by_status,
-            recent_activity=recent_activity
+        # Crear mensaje
+        db_message = Message(
+            conversation_id=conversation_id,
+            user_id=current_user.get("id", 1),
+            content=message.content,
+            message_type=message.message_type,
+            reply_to_id=message.reply_to_id,
+            metadata=message.msg_metadata
         )
         
-        return ConversationResponse(
-            message="Conversation statistics retrieved successfully",
-            data=stats
+        db.add(db_message)
+        
+        # Actualizar timestamp de conversación
+        conversation = db.query(Conversation).filter(Conversation.id == conversation_id).first()
+        if conversation:
+            conversation.updated_at = datetime.utcnow()
+        
+        db.commit()
+        db.refresh(db_message)
+        
+        response = MessageResponse(
+            id=db_message.id,
+            conversation_id=db_message.conversation_id,
+            user_id=db_message.user_id,
+            content=db_message.content,
+            message_type=db_message.message_type,
+            status=db_message.status,
+            created_at=db_message.created_at,
+            updated_at=db_message.updated_at,
+            reply_to_id=db_message.reply_to_id,
+            metadata=db_message.msg_metadata
         )
+        
+        logger.info(f"✅ Mensaje enviado: conversación {conversation_id}, mensaje {db_message.id}")
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error enviando mensaje: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error sending message: {str(e)}")
+
+@router.get("/conversations/{conversation_id}/messages", response_model=List[MessageResponse])
+async def get_messages(
+    conversation_id: int,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, le=200),
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Obtener mensajes de conversación"""
+    try:
+        # Verificar acceso
+        participant = db.query(ConversationParticipant).filter(
+            ConversationParticipant.conversation_id == conversation_id,
+            ConversationParticipant.user_id == current_user.get("id", 1),
+            ConversationParticipant.is_active == True
+        ).first()
+        
+        if not participant:
+            raise HTTPException(status_code=404, detail="Conversation not found or access denied")
+        
+        messages = db.query(Message).filter(
+            Message.conversation_id == conversation_id
+        ).order_by(desc(Message.created_at)).offset(skip).limit(limit).all()
+        
+        results = []
+        for msg in messages:
+            results.append(MessageResponse(
+                id=msg.id,
+                conversation_id=msg.conversation_id,
+                user_id=msg.user_id,
+                content=msg.content,
+                message_type=msg.message_type,
+                status=msg.status,
+                created_at=msg.created_at,
+                updated_at=msg.updated_at,
+                reply_to_id=msg.reply_to_id,
+                metadata=msg.msg_metadata
+            ))
+        
+        return results
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error obteniendo mensajes: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching messages: {str(e)}")
+
+@router.get("/conversations/{conversation_id}/search", response_model=Dict[str, Any])
+async def search_messages(
+    conversation_id: int,
+    query: str = Query(..., min_length=1),
+    limit: int = Query(50, le=100),
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Buscar mensajes en conversación"""
+    try:
+        # Verificar acceso
+        participant = db.query(ConversationParticipant).filter(
+            ConversationParticipant.conversation_id == conversation_id,
+            ConversationParticipant.user_id == current_user.get("id", 1),
+            ConversationParticipant.is_active == True
+        ).first()
+        
+        if not participant:
+            raise HTTPException(status_code=404, detail="Conversation not found or access denied")
+        
+        # Buscar mensajes
+        messages = db.query(Message).filter(
+            Message.conversation_id == conversation_id,
+            Message.content.contains(query)
+        ).order_by(desc(Message.created_at)).limit(limit).all()
+        
+        results = []
+        for msg in messages:
+            results.append({
+                "id": msg.id,
+                "content": msg.content,
+                "user_id": msg.user_id,
+                "created_at": msg.created_at.isoformat(),
+                "message_type": msg.message_type.value,
+                "relevance_score": 1.0  # Puntuación básica
+            })
+        
+        return {
+            "query": query,
+            "conversation_id": conversation_id,
+            "total_results": len(results),
+            "results": results
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error buscando mensajes: {e}")
+        raise HTTPException(status_code=500, detail=f"Error searching messages: {str(e)}")
+
+@router.post("/conversations/{conversation_id}/participants")
+async def add_participant(
+    conversation_id: int,
+    participant_data: ParticipantAdd,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Añadir participante a conversación"""
+    try:
+        # Verificar permisos de admin
+        admin_participant = db.query(ConversationParticipant).filter(
+            ConversationParticipant.conversation_id == conversation_id,
+            ConversationParticipant.user_id == current_user.get("id", 1),
+            ConversationParticipant.role.in_(["admin", "moderator"]),
+            ConversationParticipant.is_active == True
+        ).first()
+        
+        if not admin_participant:
+            raise HTTPException(status_code=403, detail="Permission denied")
+        
+        # Verificar si ya es participante
+        existing = db.query(ConversationParticipant).filter(
+            ConversationParticipant.conversation_id == conversation_id,
+            ConversationParticipant.user_id == participant_data.user_id
+        ).first()
+        
+        if existing:
+            if existing.is_active:
+                raise HTTPException(status_code=400, detail="User is already a participant")
+            else:
+                # Reactivar participante
+                existing.is_active = True
+                existing.role = participant_data.role
+                existing.joined_at = datetime.utcnow()
+        else:
+            # Crear nuevo participante
+            new_participant = ConversationParticipant(
+                conversation_id=conversation_id,
+                user_id=participant_data.user_id,
+                role=participant_data.role
+            )
+            db.add(new_participant)
+        
+        db.commit()
+        
+        return {"message": "Participant added successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error añadiendo participante: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error adding participant: {str(e)}")
+
+# ============================================================================
+# ENDPOINTS ADICIONALES
+# ============================================================================
+
+@router.get("/search/messages", response_model=Dict[str, Any])
+async def search_all_messages(
+    query: str = Query(..., min_length=1),
+    limit: int = Query(50, le=100),
+    conversation_type: Optional[ConversationType] = None,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Buscar mensajes en todas las conversaciones del usuario"""
+    try:
+        # Obtener IDs de conversaciones del usuario
+        participant_conversations = db.query(ConversationParticipant.conversation_id).filter(
+            ConversationParticipant.user_id == current_user.get("id", 1),
+            ConversationParticipant.is_active == True
+        ).subquery()
+        
+        query_builder = db.query(Message, Conversation).join(
+            Conversation, Message.conversation_id == Conversation.id
+        ).filter(
+            Message.conversation_id.in_(participant_conversations),
+            Message.content.contains(query),
+            Conversation.is_active == True
+        )
+        
+        if conversation_type:
+            query_builder = query_builder.filter(Conversation.type == conversation_type)
+        
+        results_raw = query_builder.order_by(desc(Message.created_at)).limit(limit).all()
+        
+        results = []
+        for msg, conv in results_raw:
+            results.append({
+                "id": msg.id,
+                "content": msg.content,
+                "user_id": msg.user_id,
+                "created_at": msg.created_at.isoformat(),
+                "conversation_id": msg.conversation_id,
+                "conversation_title": conv.title,
+                "conversation_type": conv.type.value,
+                "relevance_score": 1.0
+            })
+        
+        return {
+            "query": query,
+            "total_results": len(results),
+            "results": results
+        }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving conversation statistics: {str(e)}")
+        logger.error(f"❌ Error buscando en todos los mensajes: {e}")
+        raise HTTPException(status_code=500, detail=f"Error searching messages: {str(e)}")
+
+# Endpoint adicional para compatibilidad con las pruebas
+@router.post("/conversations/{conversation_id}/message", response_model=MessageResponse)
+async def send_message_compat(
+    conversation_id: int,
+    message_data: dict,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Endpoint de compatibilidad para envío de mensajes"""
+    try:
+        # Extraer contenido del mensaje
+        content = (
+            message_data.get("content") or 
+            message_data.get("message") or
+            str(message_data)
+        )
+        
+        message = MessageCreate(
+            content=content,
+            message_type=MessageType.TEXT,
+            metadata=message_data.get("metadata", {})
+        )
+        
+        return await send_message(conversation_id, message, current_user, db)
+        
+    except Exception as e:
+        logger.error(f"❌ Error en endpoint de compatibilidad: {e}")
+        raise HTTPException(status_code=500, detail=f"Error sending message: {str(e)}")
+
+# Endpoints adicionales para compatibilidad
+@router.get("/conversations/{conversation_id}/details", response_model=ConversationResponse)
+async def get_conversation_details(
+    conversation_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Obtener detalles de conversación (endpoint de compatibilidad)"""
+    return await get_conversation(conversation_id, current_user=current_user, db=db)
+
+@router.get("/conversations/{conversation_id}/history", response_model=List[MessageResponse])
+async def get_conversation_history(
+    conversation_id: int,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, le=200),
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Obtener historial de conversación (endpoint de compatibilidad)"""
+    return await get_messages(conversation_id, skip, limit, current_user, db)
