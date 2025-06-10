@@ -1,0 +1,16 @@
+{
+  "voice_id": "speaker_fr_m01",
+  "name": "Jean",
+  "language": "fr",
+  "gender": "male",
+  "description": "Voz masculina francesa",
+  "sample_files": [
+    "/opt/vokaflow/voices/native_speakers/fr/male/speaker_fr_m01/jean_sample.wav"
+  ],
+  "created_at": "2025-06-09T04:08:52.873872",
+  "is_native": true,
+  "quality_score": 1.0,
+  "accent": "fr",
+  "voice_type": "real_human",
+  "original_file": "Jean Petit_🇫🇷.mp3"
+}

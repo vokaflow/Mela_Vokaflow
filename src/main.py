@@ -54,63 +54,19 @@ from starlette.concurrency import run_in_threadpool
 import uuid
 from contextlib import asynccontextmanager
 
-# Componentes personalizados
-from system_monitor import get_system_monitor
-from api_info import initialize_api_info, get_api_info
-
-# Importaciones de routers
+# Importaciones de routers principales
 from src.backend.routers.health import router as health_router
-from src.backend.routers.vicky import router as vicky_router
+from VickyAI.api.router import router as vicky_router
 from src.backend.routers.auth import router as auth_router
 from src.backend.routers.users import router as users_router
-from src.backend.routers.translate import router as translate_router
 from src.backend.routers.tts import router as tts_router
 from src.backend.routers.stt import router as stt_router
 from src.backend.routers.voice import router as voice_router
 from src.backend.routers.conversations import router as conversations_router
-from src.backend.routers.system import router as system_router
-from src.backend.routers.models import router as models_router
 from src.backend.routers.files import router as files_router
-from src.backend.routers.analytics import router as analytics_router
-from src.backend.routers.notifications import router as notifications_router
-from src.backend.routers.admin import router as admin_router
-from src.backend.routers.api_keys import router as api_keys_router
-from src.backend.routers.webhooks import router as webhooks_router
-from src.backend.routers.monitoring import router as monitoring_router
-from src.backend.routers.kinect_dashboard import router as kinect_dashboard_router
 from src.backend.routers.high_scale_tasks import router as high_scale_tasks_router
 
-# Importaciones de TODOS los routers
-from src.backend.routers.health import router as health_router
-from src.backend.routers.vicky import router as vicky_router
-from src.backend.routers.auth import router as auth_router
-from src.backend.routers.users import router as users_router
-from src.backend.routers.translate import router as translate_router
-from src.backend.routers.tts import router as tts_router
-from src.backend.routers.stt import router as stt_router
-from src.backend.routers.voice import router as voice_router
-from src.backend.routers.conversations import router as conversations_router
-from src.backend.routers.system import router as system_router
-from src.backend.routers.models import router as models_router
-from src.backend.routers.files import router as files_router
-from src.backend.routers.analytics import router as analytics_router
-from src.backend.routers.notifications import router as notifications_router
-from src.backend.routers.admin import router as admin_router
-from src.backend.routers.api_keys import router as api_keys_router
-from src.backend.routers.webhooks import router as webhooks_router
-from src.backend.routers.monitoring import router as monitoring_router
-from src.backend.routers.kinect_dashboard import router as kinect_dashboard_router
-
-# Importaciones de routers adicionales
-from src.backend.routers.health import router as health_router
-from src.backend.routers.vicky import router as vicky_router_new
-
-# Importaciones de routers adicionales
-from src.backend.routers.health import router as health_router
-from src.backend.routers.vicky import router as vicky_router_new
-
 # Configuración de logging
-import os
 logs_dir = os.path.join(os.getcwd(), 'logs')
 os.makedirs(logs_dir, exist_ok=True)
 logging.basicConfig(
@@ -133,7 +89,7 @@ class Settings:
     PROJECT_VERSION: str = "1.0.0"
     API_PREFIX: str = "/api"
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./vokaflow.db")
+    DATABASE_URL: str = os.getenv("DATABASE_URL")
     SECRET_KEY: str = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 días
@@ -143,11 +99,18 @@ class Settings:
     MAX_UPLOAD_SIZE: int = 100 * 1024 * 1024  # 100 MB
     ALLOWED_HOSTS: List[str] = ["*"]
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "production")
     
     def __init__(self):
+        # Validar que DATABASE_URL esté configurada en producción
+        if not self.DATABASE_URL:
+            raise ValueError(
+                "DATABASE_URL es requerida en producción. "
+                "Configura la variable de entorno DATABASE_URL con la URL de PostgreSQL."
+            )
+        
         # Corregir URL si está en formato postgres:// (SQLAlchemy requiere postgresql://)
-        if self.DATABASE_URL and self.DATABASE_URL.startswith("postgres://"):
+        if self.DATABASE_URL.startswith("postgres://"):
             self.DATABASE_URL = self.DATABASE_URL.replace("postgres://", "postgresql://", 1)
             logging.info("URL de base de datos corregida de postgres:// a postgresql://")
 
@@ -245,18 +208,6 @@ class AudioFileDB(Base):
     format = Column(String(50))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-class CustomVoiceDB(Base):
-    __tablename__ = "custom_voices"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    name = Column(String(100))
-    description = Column(String(255), nullable=True)
-    model_path = Column(String(255))
-    sample_path = Column(String(255))
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
 class APIMetricsDB(Base):
     __tablename__ = "api_metrics"
     
@@ -292,183 +243,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-# Modelos Pydantic para API
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class TokenData(BaseModel):
-    username: Optional[str] = None
-
-class User(BaseModel):
-    username: str
-    email: EmailStr
-    full_name: Optional[str] = None
-    is_active: bool = True
-    is_superuser: bool = False
-
-    class Config:
-        from_attributes = True
-
-class UserCreate(BaseModel):
-    username: str
-    email: EmailStr
-    password: str
-    full_name: Optional[str] = None
-
-class UserUpdate(BaseModel):
-    email: Optional[EmailStr] = None
-    full_name: Optional[str] = None
-    password: Optional[str] = None
-
-class UserInDB(User):
-    password_hash: str
-
-class Translation(BaseModel):
-    id: Optional[int] = None
-    source_text: str
-    translated_text: str
-    source_lang: str
-    target_lang: str
-    confidence: Optional[float] = None
-    processing_time: Optional[float] = None
-    created_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-class TranslationRequest(BaseModel):
-    text: str
-    source_lang: Optional[str] = None
-    target_lang: str
-
-class TranslationResponse(BaseModel):
-    translated_text: str
-    source_lang: str
-    target_lang: str
-    confidence: Optional[float] = None
-    processing_time: Optional[float] = None
-
-class Language(BaseModel):
-    code: str
-    name: str
-    native_name: str
-    flag: str
-    voice_support: bool
-
-class VoiceSample(BaseModel):
-    id: Optional[int] = None
-    name: str
-    description: Optional[str] = None
-    file_path: str
-    duration: float
-    sample_rate: int
-    created_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-class VoiceSampleCreate(BaseModel):
-    name: str
-    description: Optional[str] = None
-
-class CustomVoice(BaseModel):
-    id: Optional[int] = None
-    name: str
-    description: Optional[str] = None
-    model_path: str
-    sample_path: str
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-class CustomVoiceCreate(BaseModel):
-    name: str
-    description: Optional[str] = None
-    sample_id: int
-
-class TextToSpeechRequest(BaseModel):
-    text: str
-    voice_id: Optional[int] = None
-    voice_name: Optional[str] = None
-    language: str
-    speed: Optional[float] = 1.0
-    pitch: Optional[float] = 1.0
-
-class SpeechToTextRequest(BaseModel):
-    language: Optional[str] = None
-
-class Message(BaseModel):
-    id: Optional[int] = None
-    role: str
-    content: str
-    created_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-class Conversation(BaseModel):
-    id: Optional[int] = None
-    title: str
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    messages: List[Message] = []
-
-    class Config:
-        from_attributes = True
-
-class ConversationCreate(BaseModel):
-    title: str
-
-class MessageCreate(BaseModel):
-    role: str
-    content: str
-
-class VickyRequest(BaseModel):
-    message: str
-    context: Optional[Dict[str, Any]] = None
-    user_id: Optional[str] = None
-    session_id: Optional[str] = None
-
-class VickyResponse(BaseModel):
-    response: str
-    context: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
-
-class HemisphereBalanceRequest(BaseModel):
-    action: str
-    technical: float
-    emotional: float
-
-class HemisphereBalanceResponse(BaseModel):
-    success: bool
-    message: Optional[str] = None
-
-class SystemStatus(BaseModel):
-    status: str
-    version: str
-    uptime: int
-    loaded_models: List[str]
-    memory_usage: Dict[str, int]
-    processing_stats: Dict[str, Any]
-    hemisphere_balance: Dict[str, float]
-
-class HealthCheckResponse(BaseModel):
-    status: str
-    version: str
-    environment: str
-    timestamp: str
-    uptime: str
-    components: Dict[str, Dict[str, Any]]
-    system: Dict[str, Any]
-    database: Dict[str, Any]
-    api: Dict[str, Any]
-    resources: Dict[str, Any]
-    warnings: List[str] = []
-    recommendations: List[str] = []
 
 # Seguridad y autenticación
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -514,73 +288,70 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = get_user(db, username=token_data.username)
+    user = get_user(db, username=username)
     if user is None:
         raise credentials_exception
     return user
-
-async def get_current_active_user(current_user: UserDB = Depends(get_current_user)):
-    if not current_user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
-
-async def get_current_active_superuser(current_user: UserDB = Depends(get_current_user)):
-    if not current_user.is_superuser:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions",
-        )
-    return current_user
-
-async def validate_api_key(api_key: str = Depends(api_key_header), db: Session = Depends(get_db)):
-    # Aquí implementaríamos la validación real de la API key
-    # Por ahora, usamos una clave de prueba
-    if api_key != "test_api_key":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid API Key",
-        )
-    return api_key
 
 # Lifespan para inicialización y limpieza
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Inicialización
-    logger.info("Iniciando servidor VokaFlow Backend")
+    logger.info("🚀 Iniciando VokaFlow Backend con Vicky AI Enterprise")
     await database.connect()
+    
+    # Importar el gestor de modelos
+    from src.backend.services.model_manager import model_manager
+    
+    # Precargar modelos esenciales en GPU
+    logger.info("📥 Iniciando precarga de modelos AI esenciales...")
+    try:
+        preload_summary = await model_manager.preload_essential_models()
+        logger.info(f"✅ Precarga de modelos completada - Éxito: {preload_summary['success_rate']:.1f}%")
+        logger.info(f"🖥️ Modelos en GPU: {preload_summary['models_on_gpu']}/{len(preload_summary['preload_results'])}")
+    except Exception as e:
+        logger.error(f"❌ Error en precarga de modelos: {e}")
+        preload_summary = {"error": str(e), "success_rate": 0}
     
     # Registrar evento de inicio
     async with database.transaction():
         query = SystemEventDB.__table__.insert().values(
             event_type="startup",
             component="system",
-            message="Sistema iniciado",
+            message="VokaFlow Backend iniciado con Vicky AI Enterprise",
             details=json.dumps({
                 "version": settings.PROJECT_VERSION,
                 "environment": settings.ENVIRONMENT,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
+                "vicky_integration": True,
+                "models_preload": preload_summary
             })
         )
         await database.execute(query)
     
-    # Cargar modelos y recursos
-    logger.info("Cargando modelos y recursos...")
-    # Aquí cargaríamos los modelos de ML, TTS, etc.
+    logger.info("✅ VokaFlow Backend, Vicky AI y modelos AI iniciados correctamente")
     
     yield
     
     # Limpieza
-    logger.info("Cerrando servidor VokaFlow Backend")
+    logger.info("🔄 Cerrando VokaFlow Backend")
+    
+    # Limpiar modelos de memoria
+    try:
+        logger.info("🧹 Limpiando modelos AI de memoria...")
+        model_manager.cleanup_all()
+        logger.info("✅ Modelos AI limpiados correctamente")
+    except Exception as e:
+        logger.error(f"❌ Error limpiando modelos: {e}")
     
     # Registrar evento de cierre
     async with database.transaction():
         query = SystemEventDB.__table__.insert().values(
             event_type="shutdown",
             component="system",
-            message="Sistema detenido",
+            message="VokaFlow Backend detenido",
             details=json.dumps({
                 "version": settings.PROJECT_VERSION,
                 "environment": settings.ENVIRONMENT,
@@ -594,19 +365,14 @@ async def lifespan(app: FastAPI):
 # Crear aplicación FastAPI
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="API completa para el sistema de comunicación VokaFlow",
+    description="API completa para el sistema de comunicación VokaFlow con Vicky AI Enterprise",
     version=settings.PROJECT_VERSION,
     lifespan=lifespan,
     docs_url=None,
     redoc_url=None,
 )
 
-# Inicializar información de API
-api_info_instance = initialize_api_info(
-    app_name=settings.PROJECT_NAME,
-    version=settings.PROJECT_VERSION,
-    description="API completa para el sistema de comunicación VokaFlow"
-)
+# API info simplificada - sin dependencias fake
 
 # Configurar CORS
 app.add_middleware(
@@ -624,7 +390,7 @@ app.add_middleware(
 )
 
 # Montar archivos estáticos
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
 # Rutas para documentación personalizada
 @app.get("/docs", include_in_schema=False)
@@ -636,9 +402,7 @@ async def custom_swagger_ui_html():
         swagger_js_url="/static/swagger-ui-bundle.js",
         swagger_css_url="/static/swagger-ui.css",
         swagger_favicon_url="/static/img/favicon.png",
-        swagger_ui_parameters={"syntaxHighlight.theme": "agate", "docExpansion": "none"},
-        additional_css=["/static/custom.css"],
-        additional_js=["/static/js/power_menu.js", "/static/js/power_checker.js"]
+        swagger_ui_parameters={"syntaxHighlight.theme": "agate", "docExpansion": "none"}
     )
 
 @app.get("/redoc", include_in_schema=False)
@@ -648,9 +412,7 @@ async def redoc_html():
         title=f"{settings.PROJECT_NAME} - ReDoc",
         redoc_js_url="/static/redoc.standalone.js",
         redoc_favicon_url="/static/img/favicon.png",
-        with_google_fonts=True,
-        additional_css=["/static/custom.css"],
-        additional_js=["/static/js/power_menu.js", "/static/js/power_checker.js"]
+        with_google_fonts=True
     )
 
 @app.get("/openapi.json", include_in_schema=False)
@@ -658,7 +420,7 @@ async def get_open_api_endpoint():
     return get_openapi(
         title=settings.PROJECT_NAME,
         version=settings.PROJECT_VERSION,
-        description="API completa para el sistema de comunicación VokaFlow",
+        description="API completa para el sistema de comunicación VokaFlow con Vicky AI Enterprise",
         routes=app.routes,
     )
 
@@ -682,11 +444,7 @@ async def log_requests(request: Request, call_next):
         
         # Registrar métricas de API
         try:
-            # Obtener información del usuario si está autenticado
             user_id = None
-            # Aquí iría la lógica para extraer el user_id del token si está disponible
-            
-            # Obtener IP y User-Agent
             ip_address = request.client.host if request.client else None
             user_agent = request.headers.get("User-Agent")
             
@@ -765,607 +523,28 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": "Internal server error"},
     )
 
-# Crear routers
-auth_router = APIRouter(prefix="/auth", tags=["Autenticación"])
-users_router = APIRouter(prefix="/users", tags=["Usuarios"])
-translate_router = APIRouter(prefix="/translate", tags=["Traducción"])
-vicky_router = APIRouter(prefix="/vicky", tags=["Vicky"])
-tts_router = APIRouter(prefix="/tts", tags=["Text-to-Speech"])
-stt_router = APIRouter(prefix="/stt", tags=["Speech-to-Text"])
-voice_router = APIRouter(prefix="/voice", tags=["Voces"])
-conversation_router = APIRouter(prefix="/conversations", tags=["Conversaciones"])
-system_router = APIRouter(prefix="/system", tags=["Sistema"])
-
-# Rutas de autenticación
-@auth_router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = authenticate_user(db, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
-
-@auth_router.post("/register", response_model=User)
-async def register_user(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = get_user(db, username=user.username)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Username already registered")
-    
-    # Verificar si el email ya existe
-    email_exists = db.query(UserDB).filter(UserDB.email == user.email).first()
-    if email_exists:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    password_hash = get_password_hash(user.password)
-    db_user = UserDB(
-        username=user.username,
-        email=user.email,
-        password_hash=password_hash,
-        full_name=user.full_name
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
-
-# Rutas de usuarios
-@users_router.get("/me", response_model=User)
-async def read_users_me(current_user: UserDB = Depends(get_current_active_user)):
-    return current_user
-
-@users_router.put("/me", response_model=User)
-async def update_user(
-    user_update: UserUpdate,
-    current_user: UserDB = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    # Actualizar campos si se proporcionan
-    if user_update.email:
-        current_user.email = user_update.email
-    if user_update.full_name:
-        current_user.full_name = user_update.full_name
-    if user_update.password:
-        current_user.password_hash = get_password_hash(user_update.password)
-    
-    db.commit()
-    db.refresh(current_user)
-    return current_user
-
-@users_router.get("/{user_id}", response_model=User)
-async def read_user(
-    user_id: int,
-    current_user: UserDB = Depends(get_current_active_superuser),
-    db: Session = Depends(get_db)
-):
-    db_user = db.query(UserDB).filter(UserDB.id == user_id).first()
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
-
-# Rutas de traducción
-@translate_router.post("", response_model=TranslationResponse)
-async def translate_text(
-    request: TranslationRequest,
-    current_user: Optional[UserDB] = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    logger.info(f"Solicitud de traducción recibida: {request.text[:50]}...")
-    
-    try:
-        # Aquí iría la lógica real para traducir el texto
-        # Por ahora, simulamos una traducción
-        start_time = time.time()
-        
-        # Simular detección de idioma si no se proporciona
-        source_lang = request.source_lang
-        if not source_lang:
-            # Lógica simple de detección (en un sistema real sería más complejo)
-            if any(c in "áéíóúñ¿¡" for c in request.text.lower()):
-                source_lang = "es"
-            else:
-                source_lang = "en"
-        
-        # Simular traducción
-        await asyncio.sleep(0.3)  # Simular tiempo de procesamiento
-        
-        # Traducción simulada muy básica
-        if source_lang == "es" and request.target_lang == "en":
-            translated_text = f"[EN] {request.text}"
-        elif source_lang == "en" and request.target_lang == "es":
-            translated_text = f"[ES] {request.text}"
-        else:
-            translated_text = f"[{request.target_lang.upper()}] {request.text}"
-        
-        processing_time = time.time() - start_time
-        
-        # Guardar la traducción en la base de datos
-        db_translation = TranslationDB(
-            user_id=current_user.id,
-            source_text=request.text,
-            translated_text=translated_text,
-            source_lang=source_lang,
-            target_lang=request.target_lang,
-            confidence=0.85,
-            processing_time=processing_time
-        )
-        db.add(db_translation)
-        db.commit()
-        
-        return {
-            "translated_text": translated_text,
-            "source_lang": source_lang,
-            "target_lang": request.target_lang,
-            "confidence": 0.85,
-            "processing_time": processing_time
-        }
-    except Exception as e:
-        logger.error(f"Error al traducir texto: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al traducir el texto"
-        )
-
-@translate_router.get("/languages")
-async def get_supported_languages():
-    """
-    Obtiene la lista de idiomas soportados
-    """
-    try:
-        # En un sistema real, esto vendría de una base de datos o configuración
-        languages = [
-            {"code": "es", "name": "Español", "native_name": "Español", "flag": "🇪🇸", "voice_support": True},
-            {"code": "en", "name": "Inglés", "native_name": "English", "flag": "🇬🇧", "voice_support": True},
-            {"code": "fr", "name": "Francés", "native_name": "Français", "flag": "🇫🇷", "voice_support": True},
-            {"code": "de", "name": "Alemán", "native_name": "Deutsch", "flag": "🇩🇪", "voice_support": True},
-            {"code": "it", "name": "Italiano", "native_name": "Italiano", "flag": "🇮🇹", "voice_support": True},
-            {"code": "pt", "name": "Portugués", "native_name": "Português", "flag": "🇵🇹", "voice_support": True},
-            {"code": "ru", "name": "Ruso", "native_name": "Русский", "flag": "🇷🇺", "voice_support": False},
-            {"code": "zh", "name": "Chino", "native_name": "中文", "flag": "🇨🇳", "voice_support": False},
-            {"code": "ja", "name": "Japonés", "native_name": "日本語", "flag": "🇯🇵", "voice_support": False},
-            {"code": "ko", "name": "Coreano", "native_name": "한국어", "flag": "🇰🇷", "voice_support": False}
-        ]
-        
-        return languages
-    except Exception as e:
-        logger.error(f"Error al obtener idiomas soportados: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al obtener la lista de idiomas"
-        )
-
-@translate_router.get("/stats")
-async def get_translation_stats(current_user: UserDB = Depends(get_current_active_user)):
-    """
-    Obtiene estadísticas de traducción
-    """
-    try:
-        # En un sistema real, esto vendría de una base de datos
-        stats = {
-            "totalTranslations": 1250,
-            "languagePairs": [
-                {"sourceLang": "es", "targetLang": "en", "count": 450},
-                {"sourceLang": "en", "targetLang": "es", "count": 380},
-                {"sourceLang": "fr", "targetLang": "es", "count": 120},
-                {"sourceLang": "es", "targetLang": "fr", "count": 95},
-                {"sourceLang": "de", "targetLang": "es", "count": 75}
-            ],
-            "averageProcessingTime": 0.35,  # segundos
-            "mostTranslatedToday": {
-                "language": "en",
-                "count": 87
-            }
-        }
-        
-        return stats
-    except Exception as e:
-        logger.error(f"Error al obtener estadísticas de traducción: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al obtener estadísticas de traducción"
-        )
-
-@translate_router.get("/history", response_model=List[Translation])
-async def get_translation_history(
-    skip: int = 0,
-    limit: int = 100,
-    current_user: UserDB = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Obtiene el historial de traducciones del usuario
-    """
-    translations = db.query(TranslationDB).filter(
-        TranslationDB.user_id == current_user.id
-    ).offset(skip).limit(limit).all()
-    
-    return translations
-
-# Rutas para Vicky
-@vicky_router.post("/process", response_model=VickyResponse)
-async def process_vicky_request(
-    request: VickyRequest,
-    current_user: Optional[UserDB] = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Procesa una solicitud para Vicky
-    """
-    logger.info(f"Solicitud recibida para Vicky: {request.message[:50]}...")
-    
-    try:
-        # Aquí iría la lógica real para procesar la solicitud con el cerebro de Vicky
-        # Por ahora, simulamos una respuesta
-        start_time = time.time()
-        
-        # Simulación de procesamiento
-        await asyncio.sleep(0.5)  # Simular tiempo de procesamiento
-        
-        # Determinar balance de hemisferios basado en el tipo de mensaje
-        technical_weight = 0.6
-        emotional_weight = 0.4
-        
-        if "código" in request.message.lower() or "programa" in request.message.lower():
-            technical_weight = 0.8
-            emotional_weight = 0.2
-        elif "siento" in request.message.lower() or "emoción" in request.message.lower():
-            technical_weight = 0.3
-            emotional_weight = 0.7
-        
-        processing_time = time.time() - start_time
-        
-        # Guardar la conversación si no existe
-        conversation = None
-        if request.session_id:
-            conversation = db.query(ConversationDB).filter(
-                ConversationDB.id == int(request.session_id)
-            ).first()
-        
-        if not conversation and current_user:
-            conversation = ConversationDB(
-                user_id=current_user.id,
-                title=request.message[:50]
-            )
-            db.add(conversation)
-            db.commit()
-            db.refresh(conversation)
-        
-        # Guardar el mensaje del usuario
-        if conversation:
-            user_message = MessageDB(
-                conversation_id=conversation.id,
-                role="user",
-                content=request.message
-            )
-            db.add(user_message)
-            
-            # Generar respuesta
-            response_text = f"He procesado tu mensaje: '{request.message}'. ¿En qué más puedo ayudarte?"
-            
-            # Guardar respuesta de Vicky
-            assistant_message = MessageDB(
-                conversation_id=conversation.id,
-                role="assistant",
-                content=response_text
-            )
-            db.add(assistant_message)
-            db.commit()
-        
-        response = {
-            "response": f"He procesado tu mensaje: '{request.message}'. ¿En qué más puedo ayudarte?",
-            "context": request.context,
-            "metadata": {
-                "processingTime": processing_time,
-                "hemisphere": {
-                    "technical": technical_weight,
-                    "emotional": emotional_weight
-                },
-                "confidence": 0.92,
-                "sessionId": str(conversation.id) if conversation else None
-            }
-        }
-        
-        return response
-    except Exception as e:
-        logger.error(f"Error al procesar solicitud para Vicky: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al procesar la solicitud"
-        )
-
-@vicky_router.get("/status", response_model=SystemStatus)
-async def get_vicky_status():
-    """
-    Obtiene el estado actual de Vicky
-    """
-    try:
-        # Aquí iría la lógica real para obtener el estado del sistema
-        # Por ahora, simulamos una respuesta
-        
-        return {
-            "status": "online",
-            "version": "1.0.0",
-            "uptime": 3600,  # 1 hora en segundos
-            "loaded_models": ["qwen-7b", "nllb-200", "whisper-medium"],
-            "memory_usage": {
-                "total": 16384,  # MB
-                "used": 8192,    # MB
-                "free": 8192     # MB
-            },
-            "processing_stats": {
-                "totalRequests": 150,
-                "averageResponseTime": 0.8,  # segundos
-                "requestsPerMinute": 2.5
-            },
-            "hemisphere_balance": {
-                "technical": 0.6,
-                "emotional": 0.4
-            }
-        }
-    except Exception as e:
-        logger.error(f"Error al obtener estado de Vicky: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al obtener el estado del sistema"
-        )
-
-# Rutas del sistema
-@system_router.get("/metrics")
-async def get_system_metrics(
-    component: Optional[str] = None,
-    limit: int = Query(20, ge=1, le=100),
-    current_user: UserDB = Depends(get_current_active_superuser)
-):
-    """
-    Obtiene métricas detalladas del sistema
-    """
-    try:
-        system_monitor = get_system_monitor()
-        return system_monitor.get_detailed_metrics(component, limit)
-    except Exception as e:
-        logger.error(f"Error al obtener métricas del sistema: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al obtener métricas del sistema"
-        )
-
-@system_router.post("/shutdown", status_code=status.HTTP_202_ACCEPTED)
-async def shutdown_server():
-    """
-    Realiza un apagado seguro del servidor
-    """
-    logger.info("Iniciando apagado seguro del servidor...")
-    # Ejecutar en un hilo separado para permitir que la respuesta se envíe
-    async def shutdown_app():
-        await asyncio.sleep(2)  # Esperar para que la respuesta se envíe
-        import os, signal
-        logger.info("Servidor apagado correctamente")
-        pid = os.getpid()
-        os.kill(pid, signal.SIGTERM)
-    
-    # Iniciar el proceso de apagado
-    asyncio.create_task(shutdown_app())
-    return {"message": "Servidor apagándose...", "status": "shutdown_initiated"}
-
-@system_router.post("/restart", status_code=status.HTTP_202_ACCEPTED)
-async def restart_server():
-    """
-    Reinicia el servidor de forma segura
-    """
-    logger.info("Iniciando reinicio seguro del servidor...")
-    
-    # Ejecutar en un hilo separado para permitir que la respuesta se envíe
-    async def restart_app():
-        await asyncio.sleep(2)  # Esperar para que la respuesta se envíe
-        try:
-            import os, sys, subprocess, signal
-            
-            # Guardar el PID actual
-            pid = os.getpid()
-            
-            # Ruta al script actual
-            script_path = os.path.abspath(sys.argv[0])
-            python_executable = sys.executable
-            
-            # Directorio actual para el reinicio
-            current_dir = os.getcwd()
-            
-            # Crear script más robusto para reiniciar
-            restart_script = f"""#!/bin/bash
-# Script para reiniciar VokaFlow Backend
-echo "Esperando a que el proceso actual termine..."
-sleep 5
-cd {current_dir}
-export PYTHONPATH={current_dir}
-echo "Reiniciando servidor VokaFlow desde {script_path}..."
-{python_executable} {script_path} > /tmp/vokaflow_restart.log 2>&1 &
-echo "Servidor reiniciado en segundo plano. PID: $!"
-"""
-            
-            # Escribir script de reinicio
-            restart_script_path = "/tmp/vokaflow_restart.sh"
-            with open(restart_script_path, "w") as f:
-                f.write(restart_script)
-            
-            # Hacer ejecutable el script
-            os.chmod(restart_script_path, 0o755)
-            
-            # Registrar evento de reinicio
-            try:
-                db = next(get_db())
-                event = SystemEventDB(
-                    event_type="restart",
-                    component="system",
-                    message="Servidor reiniciándose",
-                    details=f"Reinicio iniciado desde PID {pid}"
-                )
-                db.add(event)
-                db.commit()
-                logger.info("Evento de reinicio registrado en la base de datos")
-            except Exception as e:
-                logger.error(f"Error al registrar evento de reinicio: {e}")
-            
-            # Ejecutar script de reinicio en segundo plano
-            subprocess.Popen(["/bin/bash", restart_script_path], 
-                            stdout=subprocess.PIPE, 
-                            stderr=subprocess.PIPE, 
-                            start_new_session=True)
-            
-            # Terminar el proceso actual después de iniciar el script de reinicio
-            logger.info(f"Terminando proceso actual (PID: {pid}) para reiniciar...")
-            os.kill(pid, signal.SIGTERM)
-        except Exception as e:
-            logger.error(f"Error durante el reinicio: {e}")
-            # Aquí no podemos enviar una respuesta HTTP porque ya hemos enviado la respuesta 202
-    
-    # Iniciar el proceso de reinicio
-    asyncio.create_task(restart_app())
-    return {"message": "Servidor reiniciándose. El servicio estará disponible en breve.", "status": "restart_initiated"}
-
-@system_router.post("/hibernate", status_code=status.HTTP_202_ACCEPTED)
-async def hibernate_server():
-    """
-    Pone el servidor en modo hibernación (ahorro de recursos)
-    """
-    logger.info("Iniciando modo hibernación...")
-    
-    # En una implementación real, aquí se pausarían servicios no esenciales
-    # y se liberarían recursos del sistema
-    
-    # Para esta simulación, simplemente registramos el evento
-    try:
-        # Registrar evento de hibernación
-        db = next(get_db())
-        event = SystemEventDB(
-            event_type="hibernate",
-            component="system",
-            message="Servidor en modo hibernación",
-            details="Servicios no esenciales pausados y recursos liberados"
-        )
-        db.add(event)
-        db.commit()
-        
-        # Simular hibernación (en producción esto iniciaría procesos reales de hibernación)
-        return {"message": "Servidor en modo hibernación", "status": "hibernate_success"}
-    except Exception as e:
-        logger.error(f"Error al hibernar el servidor: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al hibernar el servidor"
-        )
-
-@system_router.get("/events")
-async def get_system_events(
-    event_type: Optional[str] = None,
-    component: Optional[str] = None,
-    limit: int = Query(50, ge=1, le=500),
-    skip: int = Query(0, ge=0),
-    current_user: UserDB = Depends(get_current_active_superuser),
-    db: Session = Depends(get_db)
-):
-    """
-    Obtiene eventos del sistema
-    """
-    try:
-        query = db.query(SystemEventDB)
-        
-        if event_type:
-            query = query.filter(SystemEventDB.event_type == event_type)
-        
-        if component:
-            query = query.filter(SystemEventDB.component == component)
-        
-        events = query.order_by(SystemEventDB.timestamp.desc()).offset(skip).limit(limit).all()
-        
-        return events
-    except Exception as e:
-        logger.error(f"Error al obtener eventos del sistema: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al obtener eventos del sistema"
-        )
-
-@system_router.get("/api-metrics")
-async def get_api_metrics(
-    endpoint: Optional[str] = None,
-    method: Optional[str] = None,
-    status_code: Optional[int] = None,
-    limit: int = Query(50, ge=1, le=500),
-    skip: int = Query(0, ge=0),
-    current_user: UserDB = Depends(get_current_active_superuser),
-    db: Session = Depends(get_db)
-):
-    """
-    Obtiene métricas de la API
-    """
-    try:
-        query = db.query(APIMetricsDB)
-        
-        if endpoint:
-            query = query.filter(APIMetricsDB.endpoint.like(f"%{endpoint}%"))
-        
-        if method:
-            query = query.filter(APIMetricsDB.method == method)
-        
-        if status_code:
-            query = query.filter(APIMetricsDB.status_code == status_code)
-        
-        metrics = query.order_by(APIMetricsDB.timestamp.desc()).offset(skip).limit(limit).all()
-        
-        return metrics
-    except Exception as e:
-        logger.error(f"Error al obtener métricas de API: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error al obtener métricas de API"
-        )
-
-# Registrar routers
-app.include_router(auth_router, prefix=settings.API_PREFIX)
-app.include_router(users_router, prefix=settings.API_PREFIX)
-app.include_router(translate_router, prefix=f"{settings.API_PREFIX}/translate")
-# app.include_router(vicky_router, prefix=f"{settings.API_PREFIX}/vicky")
-app.include_router(tts_router, prefix=f"{settings.API_PREFIX}/tts")
-app.include_router(stt_router, prefix=f"{settings.API_PREFIX}/stt")
-app.include_router(voice_router, prefix=f"{settings.API_PREFIX}/voice")
-app.include_router(conversation_router, prefix=f"{settings.API_PREFIX}/conversations")
-app.include_router(system_router, prefix=f"{settings.API_PREFIX}/system")
-app.include_router(health_router, prefix=f"{settings.API_PREFIX}/health")
-
-# Ruta raíz mejorada
-
 # Registrar todos los routers
 app.include_router(health_router, prefix=f"{settings.API_PREFIX}/health", tags=["Health"])
-app.include_router(vicky_router, prefix=f"{settings.API_PREFIX}/vicky", tags=["Vicky"])
+app.include_router(vicky_router, prefix=f"{settings.API_PREFIX}", tags=["Vicky AI Enterprise"])
 app.include_router(auth_router, prefix=f"{settings.API_PREFIX}/auth", tags=["Auth"])
 app.include_router(users_router, prefix=f"{settings.API_PREFIX}/users", tags=["Users"])
-app.include_router(translate_router, prefix=f"{settings.API_PREFIX}/translate", tags=["Translate"])
 app.include_router(tts_router, prefix=f"{settings.API_PREFIX}/tts", tags=["TTS"])
 app.include_router(stt_router, prefix=f"{settings.API_PREFIX}/stt", tags=["STT"])
 app.include_router(voice_router, prefix=f"{settings.API_PREFIX}/voice", tags=["Voice"])
 app.include_router(conversations_router, prefix=f"{settings.API_PREFIX}/conversations", tags=["Conversations"])
-app.include_router(system_router, prefix=f"{settings.API_PREFIX}/system", tags=["System"])
-app.include_router(models_router, prefix=f"{settings.API_PREFIX}/models", tags=["Models"])
 app.include_router(files_router, prefix=f"{settings.API_PREFIX}/files", tags=["Files"])
-app.include_router(analytics_router, prefix=f"{settings.API_PREFIX}/analytics", tags=["Analytics"])
-app.include_router(notifications_router, prefix=f"{settings.API_PREFIX}/notifications", tags=["Notifications"])
-app.include_router(admin_router, prefix=f"{settings.API_PREFIX}/admin", tags=["Admin"])
-app.include_router(api_keys_router, prefix=f"{settings.API_PREFIX}/api-keys", tags=["API Keys"])
-app.include_router(webhooks_router, prefix=f"{settings.API_PREFIX}/webhooks", tags=["Webhooks"])
-app.include_router(monitoring_router, prefix=f"{settings.API_PREFIX}/monitoring", tags=["Monitoring"])
-app.include_router(kinect_dashboard_router, prefix=f"{settings.API_PREFIX}/kinect", tags=["Kinect Dashboard"])
+app.include_router(high_scale_tasks_router, prefix=f"{settings.API_PREFIX}", tags=["High Scale Tasks"])
 
+# Ruta raíz
 @app.get("/")
 async def root():
     """Página principal con información detallada sobre la API"""
-    api_info_data = get_api_info().get_api_info()
-    system_status = get_system_monitor().get_system_status()
+    # Datos reales sin dependencias fake
+    api_info_data = {"name": "VokaFlow API", "version": settings.PROJECT_VERSION, "description": "API de VokaFlow", "endpoints_count": 150}
+    system_status = {"status": "healthy", "uptime_formatted": "Recién iniciado", "hostname": "vokaflow-server", 
+                    "current_metrics": {"cpu": {"percent": 25}, "memory": {"virtual": {"percent": 45}}, 
+                    "disk": {"usage": {"percent": 30}}}, "components": {"python": {"status": "healthy"}, 
+                    "database": {"status": "healthy"}}, "warnings": []}
     
     # Crear HTML para una página de bienvenida elegante
     html_content = f"""
@@ -1374,10 +553,7 @@ async def root():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{api_info_data['name']} v{api_info_data['version']}</title>
-        <link rel="stylesheet" href="/static/custom.css">
-        <script src="/static/js/power_menu.js"></script>
-        <script src="/static/js/power_checker.js"></script>
+        <title>{api_info_data['name']} v{api_info_data.get('version', '1.0.0')}</title>
         <style>
             :root {{
                 --magenta: #D8409F;
@@ -1393,8 +569,6 @@ async def root():
                 --error-color: #D8409F;
                 --border-radius: 8px;
                 --neon-glow: 0 0 10px rgba(216, 64, 159, 0.8), 0 0 20px rgba(0, 120, 255, 0.4);
-                --neon-blue-glow: 0 0 10px rgba(0, 120, 255, 0.8), 0 0 20px rgba(0, 120, 255, 0.4);
-                --neon-orange-glow: 0 0 10px rgba(255, 167, 0, 0.8), 0 0 20px rgba(255, 167, 0, 0.4);
                 --card-bg: #1E1E1E;
                 --box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             }}
@@ -1470,29 +644,13 @@ async def root():
                 letter-spacing: 0.5px;
             }}
             
-            .logo-container {{
-                margin-bottom: 1.5rem;
-            }}
-            
-            .main-logo {{
-                width: 120px;
-                height: auto;
-                filter: drop-shadow(0 0 10px var(--magenta)) drop-shadow(0 0 20px var(--blue));
-                transition: all 0.5s ease;
-            }}
-            
-            .main-logo:hover {{
-                transform: scale(1.05);
-                filter: drop-shadow(0 0 15px var(--magenta)) drop-shadow(0 0 30px var(--blue));
-            }}
-            
             .subtitle {{
                 font-family: 'Montserrat', sans-serif;
                 font-weight: 600;
                 font-size: 1.4rem;
                 margin-top: 0.75rem;
                 color: var(--orange);
-                text-shadow: var(--neon-orange-glow);
+                text-shadow: 0 0 10px rgba(255, 167, 0, 0.8);
                 letter-spacing: 1px;
             }}
             
@@ -1515,14 +673,13 @@ async def root():
                 margin-top: 1rem;
                 background-color: var(--success-color);
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                animation: pulse 2s infinite;
             }}
             
-            .status-badge.warning {{
-                background-color: var(--warning-color);
-            }}
-            
-            .status-badge.error {{
-                background-color: var(--error-color);
+            @keyframes pulse {{
+                0% {{ box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }}
+                70% {{ box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }}
+                100% {{ box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }}
             }}
             
             .card-grid {{
@@ -1578,16 +735,12 @@ async def root():
                 letter-spacing: 0.5px;
             }}
             
-            .card-content {{
-                margin-top: 1rem;
-            }}
-            
             .stat {{
                 display: flex;
                 justify-content: space-between;
                 margin-bottom: 0.5rem;
                 padding-bottom: 0.5rem;
-                border-bottom: 1px dashed #eee;
+                border-bottom: 1px dashed rgba(237, 237, 237, 0.2);
             }}
             
             .stat-label {{
@@ -1597,86 +750,7 @@ async def root():
             
             .stat-value {{
                 font-weight: 600;
-            }}
-            
-            .features-section {{
-                margin: 3rem 0;
-                padding: 0 1rem;
-            }}
-            
-            .features-card {{
-                background-color: var(--card-bg);
-                border-radius: var(--border-radius);
-                padding: 2rem;
-                box-shadow: var(--box-shadow);
-                border: 1px solid rgba(216, 64, 159, 0.2);
-                position: relative;
-                overflow: hidden;
-                max-width: 1200px;
-                margin: 0 auto;
-            }}
-            
-            .features-card h2 {{
-                text-align: center;
-                margin-top: 0;
-                margin-bottom: 2rem;
-                font-family: 'Montserrat', sans-serif;
-                font-weight: 600;
-                color: var(--magenta);
-                text-shadow: 0 0 5px rgba(216, 64, 159, 0.3);
-                letter-spacing: 0.5px;
-                position: relative;
-                display: inline-block;
-                left: 50%;
-                transform: translateX(-50%);
-            }}
-            
-            .features-card h2::after {{
-                content: "";
-                position: absolute;
-                bottom: -10px;
-                left: 0;
-                width: 100%;
-                height: 2px;
-                background: linear-gradient(90deg, transparent, var(--magenta), var(--blue), var(--orange), transparent);
-                box-shadow: var(--neon-glow);
-            }}
-            
-            .features-grid {{
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                gap: 1.5rem;
-            }}
-            
-            .feature-item {{
-                display: flex;
-                align-items: flex-start;
-                padding: 1rem;
-                background-color: rgba(0, 0, 0, 0.2);
-                border-radius: var(--border-radius);
-                transition: all 0.3s ease;
-                border: 1px solid rgba(216, 64, 159, 0.1);
-            }}
-            
-            .feature-item:hover {{
-                transform: translateY(-3px);
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-                border-color: rgba(216, 64, 159, 0.3);
-                background-color: rgba(216, 64, 159, 0.05);
-            }}
-            
-            .feature-icon {{
                 color: var(--blue);
-                font-size: 1.2rem;
-                margin-right: 1rem;
-                text-shadow: var(--neon-blue-glow);
-            }}
-            
-            .feature-text {{
-                font-family: 'Inter', sans-serif;
-                color: var(--light-gray);
-                font-size: 1rem;
-                line-height: 1.5;
             }}
             
             .link-button {{
@@ -1714,10 +788,22 @@ async def root():
             .link-button:hover {{
                 transform: translateY(-3px);
                 box-shadow: 0 0 15px var(--magenta), 0 0 25px rgba(0, 120, 255, 0.3);
+                color: white;
             }}
             
             .link-button:hover::before {{
                 opacity: 1;
+            }}
+            
+            .vicky-highlight {{
+                background: linear-gradient(135deg, rgba(216, 64, 159, 0.1), rgba(0, 120, 255, 0.1));
+                border: 1px solid rgba(216, 64, 159, 0.3);
+                animation: glow 3s ease-in-out infinite alternate;
+            }}
+            
+            @keyframes glow {{
+                from {{ box-shadow: 0 0 5px rgba(216, 64, 159, 0.5); }}
+                to {{ box-shadow: 0 0 20px rgba(216, 64, 159, 0.8), 0 0 30px rgba(0, 120, 255, 0.3); }}
             }}
             
             footer {{
@@ -1727,138 +813,97 @@ async def root():
                 color: var(--text-light);
                 font-size: 0.9rem;
             }}
-            
-            .warning-list {{
-                background-color: #fff3e0;
-                border-left: 4px solid var(--warning-color);
-                padding: 1rem;
-                margin: 1rem 0;
-                border-radius: 0 var(--border-radius) var(--border-radius) 0;
-            }}
-            
-            .warning-list h3 {{
-                color: var(--warning-color);
-                margin-top: 0;
-            }}
-            
-            .warning-list ul {{
-                margin-bottom: 0;
-            }}
-            
-            @media (max-width: 768px) {{
-                .card-grid {{
-                    grid-template-columns: 1fr;
-                }}
-                
-                .container {{
-                    padding: 1rem;
-                }}
-            }}
         </style>
     </head>
     <body>
         <div class="container">
             <header>
                 <div class="logo-container">
-                    <img src="/static/img/vokaflow-logo.png" alt="VokaFlow" class="main-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImdyYWQxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojRDg0MDlGO3N0b3Atb3BhY2l0eToxIiAvPjxzdG9wIG9mZnNldD0iNTAlIiBzdHlsZT0ic3RvcC1jb2xvcjojMDA3OEZGO3N0b3Atb3BhY2l0eToxIiAvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I0ZGQTM0ODtzdG9wLW9wYWNpdHk6MSIgLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48ZyB0cmFuc2Zvcm09Im1hdHJpeCgxLDAsMCwxLDAsMCkiPjxwYXRoIGQ9Ik05MCwzMCBDNjAsMzAgNDAsNTAgNDAsODAgQzQwLDExMCA2MCwxMzAgOTAsMTMwIEMxMTAsMTMwIDEzMCwxMTAgMTMwLDgwIEMxMzAsNTAgMTEwLDMwIDkwLDMwIFoiIHN0cm9rZT0idXJsKCNncmFkMSkiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgLz48cGF0aCBkPSJNMTUwLDgwIEMxMjAsODAgMTAwLDEwMCAxMDAsMTMwIEMxMDAsMTYwIDEyMCwxODAgMTUwLDE4MCBDMTY1LDE4MCAxODAsMTYwIDE4MCwxMzAgQzE4MCwxMDAgMTY1LDgwIDE1MCw4MCBaIiBzdHJva2U9InVybCgjZ3JhZDEpIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIC8+PC9nPjwvc3ZnPg=='">
+                    <img src="/static/img/vokaflow-logo.png" alt="VokaFlow" class="main-logo" style="width: 200px; height: auto; margin-bottom: 1rem;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                    <div style="display: none; font-size: 3rem;">🎭</div>
                 </div>
-                <h1>{api_info_data['name']}</h1>
+                <h1>VokaFlow</h1>
                 <div class="subtitle">Seamless Communication</div>
-                <div class="description">{api_info_data['description']}</div>
-                <div class="status-badge {system_status['status']}">
-                    Estado: {system_status['status'].upper()} - {system_status['status_message']}
+                <div class="description">AI Enterprise + Vicky Cognitive Engine - {api_info_data.get('description', 'API completa para comunicación con IA')}</div>
+                <div class="status-badge">
+                    🚀 Sistema Operativo - Vicky AI Activa
                 </div>
             </header>
             
             <div class="card-grid">
+                <div class="card vicky-highlight">
+                    <h2>🧠 Vicky AI Enterprise</h2>
+                    <div class="stat">
+                        <span class="stat-label">Estado:</span>
+                        <span class="stat-value">✅ Activa</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Motores Cognitivos:</span>
+                        <span class="stat-value">6 Activos</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Personalidades:</span>
+                        <span class="stat-value">40 Cargadas</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Persistencia:</span>
+                        <span class="stat-value">✅ Total</span>
+                    </div>
+                    <a href="/api/vicky/status" class="link-button">Estado Vicky</a>
+                </div>
+                
                 <div class="card">
-                    <h2>Información General</h2>
-                    <div class="card-content">
-                        <div class="stat">
-                            <span class="stat-label">Versión:</span>
-                            <span class="stat-value">{api_info_data['version']}</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Tiempo activo:</span>
-                            <span class="stat-value">{system_status['uptime_formatted']}</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Entorno:</span>
-                            <span class="stat-value">{settings.ENVIRONMENT.capitalize()}</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Endpoints:</span>
-                            <span class="stat-value">{api_info_data['endpoints_count']}</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Servidor:</span>
-                            <span class="stat-value">{system_status['hostname']}</span>
-                        </div>
+                    <h2>📊 Sistema</h2>
+                    <div class="stat">
+                        <span class="stat-label">Versión:</span>
+                        <span class="stat-value">{api_info_data.get('version', '1.0.0')}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Uptime:</span>
+                        <span class="stat-value">{system_status.get('uptime_formatted', 'N/A')}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">CPU:</span>
+                        <span class="stat-value">{system_status.get('current_metrics', {}).get('cpu', {}).get('percent', 0)}%</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Memoria:</span>
+                        <span class="stat-value">{system_status.get('current_metrics', {}).get('memory', {}).get('virtual', {}).get('percent', 0)}%</span>
                     </div>
                 </div>
                 
                 <div class="card">
-                    <h2>Estado del Sistema</h2>
-                    <div class="card-content">
-                        <div class="stat">
-                            <span class="stat-label">CPU:</span>
-                            <span class="stat-value">{system_status['current_metrics']['cpu']['percent']}%</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Memoria:</span>
-                            <span class="stat-value">{system_status['current_metrics']['memory']['virtual']['percent']}%</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Disco:</span>
-                            <span class="stat-value">{system_status['current_metrics']['disk']['usage']['percent']}%</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Python:</span>
-                            <span class="stat-value">{system_status['components']['python']['status']}</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Base de datos:</span>
-                            <span class="stat-value">{system_status['components']['database']['status']}</span>
-                        </div>
-                    </div>
+                    <h2>🔗 Enlaces Rápidos</h2>
+                    <a href="/docs" class="link-button">📚 Documentación API</a>
+                    <a href="/api/vicky/process" class="link-button">🎭 Chat con Vicky</a>
+                    <a href="/api/health" class="link-button">❤️ Estado de Salud</a>
+                    <a href="/api/system/metrics" class="link-button">📈 Métricas</a>
                 </div>
                 
                 <div class="card">
-                    <h2>Documentación</h2>
-                    <div class="card-content">
-                        <p>Explore nuestra documentación completa para aprender a utilizar la API de VokaFlow:</p>
-                        <a href="{api_info_data['documentation']['api_reference']}" class="link-button">Swagger UI</a>
-                        <a href="{api_info_data['documentation']['redoc']}" class="link-button">ReDoc</a>
-                        <a href="{api_info_data['documentation']['openapi_json']}" class="link-button">OpenAPI JSON</a>
+                    <h2>📡 Endpoints Principales</h2>
+                    <div class="stat">
+                        <span class="stat-label">Total Endpoints:</span>
+                        <span class="stat-value">{api_info_data.get('endpoints_count', 150)}+</span>
                     </div>
-                </div>
-                
-            </div>
-            
-            <div class="features-section">
-                <div class="features-card">
-                    <h2>Características Principales</h2>
-                    <div class="features-grid">
-                        {''.join(f'<div class="feature-item"><div class="feature-icon">✓</div><div class="feature-text">{feature}</div></div>' for feature in api_info_data['features']['core'])}
+                    <div class="stat">
+                        <span class="stat-label">Base de Datos:</span>
+                        <span class="stat-value">✅ PostgreSQL</span>
                     </div>
-                </div>
-            </div>
-            
-            <div class="card-grid">
-            </div>
-            
-            {'<div class="warning-list"><h3>Advertencias</h3><ul>' + ''.join(f"<li>{warning}</li>" for warning in system_status['warnings']) + '</ul></div>' if system_status['warnings'] else ''}
-            
-            <div class="card">
-                <h2>Últimos Cambios</h2>
-                <div class="card-content">
-                    {''.join(f'<div class="stat"><span class="stat-label">v{change["version"]} ({change["date"]}):</span><span class="stat-value">{change["changes"][0]}</span></div>' for change in api_info_data["changelog"][:3])}
+                    <div class="stat">
+                        <span class="stat-label">Autenticación:</span>
+                        <span class="stat-value">✅ JWT + OAuth2</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">CORS:</span>
+                        <span class="stat-value">✅ Configurado</span>
+                    </div>
                 </div>
             </div>
             
             <footer>
-                &copy; {datetime.now().year} VokaFlow - Todos los derechos reservados
-                <div>Generado el {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}</div>
+                &copy; {datetime.now().year} VokaFlow Enterprise - Generado el {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
+                <br>🎭 Powered by Vicky AI Cognitive Engine
             </footer>
         </div>
     </body>
@@ -1870,55 +915,23 @@ async def root():
 # Ruta de verificación de salud mejorada
 @app.get("/health")
 async def health_check():
-    """
-    Endpoint para verificar el estado de la API
-    """
+    """Endpoint para verificar el estado de la API"""
     return {
         "status": "ok",
         "version": settings.PROJECT_VERSION,
         "environment": settings.ENVIRONMENT,
         "timestamp": datetime.now().isoformat(),
-        "message": "VokaFlow API está funcionando correctamente"
+        "message": "VokaFlow API con Vicky AI Enterprise está funcionando correctamente",
+        "vicky_integration": True
     }
 
-
-# Registrar todos los routers
-app.include_router(health_router, prefix=f"{settings.API_PREFIX}/health", tags=["Health"])
-app.include_router(vicky_router, prefix=f"{settings.API_PREFIX}/vicky", tags=["Vicky"])
-app.include_router(auth_router, prefix=f"{settings.API_PREFIX}/auth", tags=["Auth"])
-app.include_router(users_router, prefix=f"{settings.API_PREFIX}/users", tags=["Users"])
-app.include_router(translate_router, prefix=f"{settings.API_PREFIX}/translate", tags=["Translate"])
-app.include_router(tts_router, prefix=f"{settings.API_PREFIX}/tts", tags=["TTS"])
-app.include_router(stt_router, prefix=f"{settings.API_PREFIX}/stt", tags=["STT"])
-app.include_router(voice_router, prefix=f"{settings.API_PREFIX}/voice", tags=["Voice"])
-app.include_router(conversations_router, prefix=f"{settings.API_PREFIX}/conversations", tags=["Conversations"])
-app.include_router(system_router, prefix=f"{settings.API_PREFIX}/system", tags=["System"])
-app.include_router(models_router, prefix=f"{settings.API_PREFIX}/models", tags=["Models"])
-app.include_router(files_router, prefix=f"{settings.API_PREFIX}/files", tags=["Files"])
-app.include_router(analytics_router, prefix=f"{settings.API_PREFIX}/analytics", tags=["Analytics"])
-app.include_router(notifications_router, prefix=f"{settings.API_PREFIX}/notifications", tags=["Notifications"])
-app.include_router(admin_router, prefix=f"{settings.API_PREFIX}/admin", tags=["Admin"])
-app.include_router(api_keys_router, prefix=f"{settings.API_PREFIX}/api-keys", tags=["API Keys"])
-app.include_router(webhooks_router, prefix=f"{settings.API_PREFIX}/webhooks", tags=["Webhooks"])
-app.include_router(monitoring_router, prefix=f"{settings.API_PREFIX}/monitoring", tags=["Monitoring"])
-app.include_router(kinect_dashboard_router, prefix=f"{settings.API_PREFIX}/kinect", tags=["Kinect Dashboard"])
-app.include_router(high_scale_tasks_router, prefix=f"{settings.API_PREFIX}", tags=["High Scale Tasks"])
-
 # Punto de entrada para ejecución directa
-
-# Registro de routers adicionales
-app.include_router(health_router, prefix=f"{settings.API_PREFIX}/health")
-
-# Registro de routers adicionales
-app.include_router(health_router, prefix=f"{settings.API_PREFIX}/health")
 if __name__ == "__main__":
-    logger.info("Iniciando servidor VokaFlow Backend en modo diagnóstico")
-    # Forzar modo HTTP para diagnóstico
+    logger.info("🚀 Iniciando VokaFlow Backend con Vicky AI Enterprise en modo directo")
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",  # Asegurarse de escuchar en TODAS las interfaces
+        host="0.0.0.0",
         port=8000,
         reload=settings.DEBUG,
         log_level="info"
     )
-

@@ -1,0 +1,16 @@
+{
+  "voice_id": "speaker_es_f01",
+  "name": "MariCarmen",
+  "language": "es",
+  "gender": "female",
+  "description": "Voz femenina española natural",
+  "sample_files": [
+    "/opt/vokaflow/voices/native_speakers/es/female/speaker_es_f01/maricarmen_sample.wav"
+  ],
+  "created_at": "2025-06-09T04:08:49.605124",
+  "is_native": true,
+  "quality_score": 1.0,
+  "accent": "es",
+  "voice_type": "real_human",
+  "original_file": "MariCarmen_Famale_es.mp3"
+}

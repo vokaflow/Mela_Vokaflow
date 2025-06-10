@@ -1,0 +1,16 @@
+{
+  "voice_id": "speaker_pt_f01",
+  "name": "Scheila",
+  "language": "pt",
+  "gender": "female",
+  "description": "Voz femenina portuguesa",
+  "sample_files": [
+    "/opt/vokaflow/voices/native_speakers/pt/female/speaker_pt_f01/scheila_sample.wav"
+  ],
+  "created_at": "2025-06-09T04:08:52.133750",
+  "is_native": true,
+  "quality_score": 1.0,
+  "accent": "pt",
+  "voice_type": "real_human",
+  "original_file": "Scheila_🇵🇹.mp3"
+}

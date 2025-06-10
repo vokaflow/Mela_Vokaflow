@@ -16,6 +16,10 @@ from pydantic import BaseModel, validator, Field
 import json
 import hashlib
 
+# Importar servicios reales
+from src.backend.services.stt_service import stt_service, STTResult
+from src.backend.services.model_manager import model_manager
+
 # Configuración de logging
 logger = logging.getLogger("vokaflow.stt")
 
@@ -183,17 +187,9 @@ async def transcribe_audio(
     filter_profanity: bool = Form(False),
     current_user: dict = Depends(get_current_user)
 ):
-    """Transcribe un archivo de audio a texto"""
+    """Transcribe un archivo de audio a texto usando Whisper Large V3"""
     try:
-        logger.info(f"Transcripción STT: {audio.filename}")
-        
-        # Validar archivo
-        is_valid, error_msg = validate_audio_file(audio)
-        if not is_valid:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=error_msg
-            )
+        logger.info(f"🎤 Whisper STT: {audio.filename}")
         
         # Leer archivo
         audio_data = await audio.read()
@@ -205,44 +201,41 @@ async def transcribe_audio(
                 detail=f"Archivo muy grande. Máximo: {MAX_AUDIO_SIZE // (1024*1024)}MB"
             )
         
-        # Crear configuración
-        config = STTRequest(
+        # Usar el servicio real de STT
+        stt_result = await stt_service.transcribe_audio(
+            audio_data=audio_data,
+            filename=audio.filename,
             language=language,
-            enable_punctuation=enable_punctuation,
-            enable_speaker_diarization=enable_speaker_diarization,
             enable_word_timestamps=enable_word_timestamps,
+            enable_speaker_diarization=enable_speaker_diarization,
+            enable_punctuation=enable_punctuation,
             filter_profanity=filter_profanity
         )
         
-        # Procesar audio
-        result = await process_audio_file(audio_data, audio.filename, config)
-        
+        # Convertir resultado a formato del router
         response = STTResponse(
-            transcript=result["transcript"],
-            confidence=result["confidence"],
-            language_detected=result["language_detected"],
-            processing_time=result["processing_time"],
-            audio_duration=result["audio_duration"],
-            word_count=result["word_count"],
-            speakers=result.get("speakers"),
-            word_timestamps=result.get("word_timestamps"),
+            transcript=stt_result.transcript,
+            confidence=stt_result.confidence,
+            language_detected=stt_result.language_detected,
+            processing_time=stt_result.processing_time,
+            audio_duration=stt_result.audio_duration,
+            word_count=stt_result.word_count,
+            speakers=stt_result.speakers,
+            word_timestamps=stt_result.word_timestamps,
             metadata={
-                "filename": audio.filename,
-                "file_size": len(audio_data),
-                "format": audio.filename.split('.')[-1].lower(),
-                "punctuation_enabled": enable_punctuation,
-                "speaker_diarization": enable_speaker_diarization,
-                "word_timestamps": enable_word_timestamps
+                **stt_result.metadata,
+                "model_used": stt_result.model_used,
+                "is_whisper": stt_result.model_used == "whisper-large-v3"
             }
         )
         
-        logger.info(f"STT completado en {response.processing_time:.3f}s")
+        logger.info(f"✅ Whisper STT completado en {response.processing_time:.3f}s con {stt_result.model_used}")
         return response
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error en transcripción STT: {e}")
+        logger.error(f"❌ Error en transcripción Whisper: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al procesar audio: {str(e)}"

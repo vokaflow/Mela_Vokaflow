@@ -1,0 +1,38 @@
+{
+  "current_personality": "balanced",
+  "hemisphere_balance": {
+    "technical": 0.6,
+    "emotional": 0.4
+  },
+  "active_engines": [],
+  "session_count": 187,
+  "total_interactions": 45,
+  "last_update": "2025-06-09T22:48:09.474131",
+  "uptime_start": "2025-06-08T00:45:51.685098",
+  "cognitive_load": 0.0,
+  "memory_usage": {
+    "short_term": 0.0,
+    "long_term": 0.0
+  },
+  "learning_metrics": {
+    "patterns_learned": 0,
+    "adaptations_made": 0,
+    "success_rate": 0.9
+  },
+  "processing_efficiency": {
+    "average_response_time": 0.0025543241500854495
+  },
+  "interaction_patterns": {
+    "total_interactions": 25
+  },
+  "error_analysis": {
+    "error_rate": 0.48
+  },
+  "decision_quality": {},
+  "last_response": {
+    "timestamp": "2025-06-09T21:25:54.959726",
+    "processing_time": 0.002989053726196289,
+    "cognitive_mode": true,
+    "confidence": 0.3470577136594005
+  }
+}

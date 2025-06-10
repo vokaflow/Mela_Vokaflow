@@ -1,0 +1,16 @@
+{
+  "voice_id": "speaker_fr_f01",
+  "name": "Mademoiselle",
+  "language": "fr",
+  "gender": "female",
+  "description": "Voz femenina francesa",
+  "sample_files": [
+    "/opt/vokaflow/voices/native_speakers/fr/female/speaker_fr_f01/mademoiselle_sample.wav"
+  ],
+  "created_at": "2025-06-09T04:08:52.681590",
+  "is_native": true,
+  "quality_score": 1.0,
+  "accent": "fr",
+  "voice_type": "real_human",
+  "original_file": "Mademoiselle_🇫🇷.mp3"
+}

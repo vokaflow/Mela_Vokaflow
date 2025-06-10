@@ -1,0 +1,234 @@
+﻿{
+    "appTitle": "VokaFlow 4.0",
+    "appSubtitle": "Universal Multilingual Communication",
+    
+    "splash": {
+        "loading": "Loading...",
+        "welcome": "Welcome to VokaFlow 4.0",
+        "tagline": "Real-time translation for everyone"
+    },
+    
+    "auth": {
+        "title": "Sign In",
+        "phoneNumber": "Phone number",
+        "phoneHint": "+1 123 456 789",
+        "sendCode": "Send code",
+        "verifyCode": "Verify code",
+        "codeHint": "Enter 6-digit code",
+        "resendCode": "Resend code",
+        "loginWithGoogle": "Continue with Google",
+        "loginWithApple": "Continue with Apple",
+        "termsAndConditions": "By continuing, you accept our Terms and Conditions",
+        "privacy": "Privacy Policy"
+    },
+    
+    "navigation": {
+        "estados": "Status",
+        "chats": "Chats",
+        "vicky": "Vicky AI",
+        "traductor": "Translate",
+        "ajustes": "Settings"
+    },
+    
+    "estados": {
+        "title": "Status",
+        "myStatus": "My status",
+        "addStatus": "Add status",
+        "recentUpdates": "Recent updates",
+        "viewedUpdates": "Viewed updates",
+        "createText": "Create text status",
+        "createImage": "Add image",
+        "createVideo": "Add video",
+        "createAudio": "Record audio",
+        "typeMessage": "Type something...",
+        "selectBackground": "Select background",
+        "publish": "Publish",
+        "translation": "Auto translation enabled"
+    },
+    
+    "chats": {
+        "title": "Chats",
+        "searchChats": "Search chats",
+        "newChat": "New chat",
+        "noChats": "No chats yet",
+        "startConversation": "Start a conversation",
+        "online": "Online",
+        "typing": "Typing...",
+        "lastSeen": "Last seen",
+        "messageTranslated": "Message translated",
+        "showOriginal": "Show original",
+        "hideOriginal": "Hide original",
+        "speakMessage": "Speak message",
+        "recordVoice": "Record voice message",
+        "sendImage": "Send image",
+        "sendFile": "Send file",
+        "autoTranslation": "Auto translation"
+    },
+    
+    "videoflow": {
+        "title": "VideoFlow",
+        "startCall": "Start video call",
+        "incomingCall": "Incoming call",
+        "accept": "Accept",
+        "decline": "Decline",
+        "endCall": "End call",
+        "muteAudio": "Mute audio",
+        "unmuteAudio": "Unmute audio",
+        "disableVideo": "Disable video",
+        "enableVideo": "Enable video",
+        "switchCamera": "Switch camera",
+        "subtitles": "Subtitles",
+        "liveTranslation": "Live translation",
+        "dubbing": "Real-time dubbing",
+        "callDuration": "Call duration",
+        "connectionQuality": "Connection quality"
+    },
+    
+    "vicky": {
+        "title": "Vicky AI",
+        "subtitle": "Your intelligent personal assistant",
+        "greeting": "Hi! I'm Vicky, your personal assistant. How can I help you?",
+        "typeMessage": "Type your message...",
+        "listening": "Listening...",
+        "thinking": "Thinking...",
+        "speaking": "Speaking...",
+        "voiceInput": "Voice message",
+        "suggestions": {
+            "translate": "Translate a text",
+            "help": "Help with the app",
+            "weather": "What's the weather like?",
+            "schedule": "Organize my day"
+        },
+        "capabilities": {
+            "translation": "Smart translations",
+            "assistance": "Personal assistance",
+            "learning": "Adaptive learning",
+            "voice": "Voice conversation"
+        }
+    },
+    
+    "traductor": {
+        "title": "Translator",
+        "detectLanguage": "Detect language",
+        "swapLanguages": "Swap languages",
+        "translateText": "Translate text",
+        "speakText": "Speak text",
+        "listenAndTranslate": "Listen and translate",
+        "cameraTranslate": "Camera translate",
+        "conversation": "Conversation",
+        "imageTranslation": "Image translation",
+        "voiceToVoice": "Voice to voice",
+        "textToSpeech": "Text to speech",
+        "ocrDetected": "Text detected in image",
+        "translating": "Translating...",
+        "listening": "Listening...",
+        "processing": "Processing..."
+    },
+    
+    "ajustes": {
+        "title": "Settings",
+        "account": "Account",
+        "profile": "Profile",
+        "language": "Language",
+        "notifications": "Notifications",
+        "privacy": "Privacy",
+        "security": "Security",
+        "translation": "Translation settings",
+        "voice": "Voice settings",
+        "data": "Data usage",
+        "storage": "Storage",
+        "backup": "Backup",
+        "help": "Help",
+        "about": "About",
+        "logout": "Sign out",
+        "preferredLanguage": "Preferred language",
+        "autoTranslate": "Auto translate",
+        "voiceSpeed": "Voice speed",
+        "voiceGender": "Voice gender",
+        "downloadLanguages": "Download offline languages",
+        "premium": "VokaFlow Premium",
+        "upgrade": "Upgrade to Premium"
+    },
+    
+    "languages": {
+        "spanish": "Spanish",
+        "english": "English",
+        "french": "French",
+        "german": "German",
+        "italian": "Italian",
+        "portuguese": "Portuguese",
+        "chinese": "Chinese",
+        "japanese": "Japanese",
+        "korean": "Korean",
+        "arabic": "Arabic",
+        "russian": "Russian",
+        "hindi": "Hindi"
+    },
+    
+    "common": {
+        "yes": "Yes",
+        "no": "No",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "save": "Save",
+        "edit": "Edit",
+        "delete": "Delete",
+        "share": "Share",
+        "copy": "Copy",
+        "retry": "Retry",
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success",
+        "warning": "Warning",
+        "info": "Information",
+        "ok": "OK",
+        "done": "Done",
+        "next": "Next",
+        "previous": "Previous",
+        "skip": "Skip",
+        "close": "Close",
+        "open": "Open",
+        "send": "Send",
+        "receive": "Receive",
+        "search": "Search"
+    },
+    
+    "errors": {
+        "networkError": "Network error",
+        "translationError": "Translation error",
+        "voiceError": "Voice recognition error",
+        "cameraError": "Camera error",
+        "microphoneError": "Microphone error",
+        "storageError": "Storage error",
+        "permissionDenied": "Permission denied",
+        "tryAgain": "Try again",
+        "contactSupport": "Contact support"
+    },
+    
+    "premium": {
+        "title": "VokaFlow Premium",
+        "subtitle": "Unlock full potential",
+        "features": {
+            "unlimitedTranslations": "Unlimited translations",
+            "offlineMode": "Offline mode",
+            "advancedVoice": "Premium voices",
+            "prioritySupport": "Priority support",
+            "noAds": "No ads",
+            "cloudBackup": "Cloud backup"
+        },
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "subscribe": "Subscribe",
+        "restore": "Restore purchase"
+    },
+    
+    "button": {
+        "primary": "Primary",
+        "secondary": "Secondary",
+        "outline": "Outline",
+        "ghost": "Ghost",
+        "link": "Link",
+        "destructive": "Delete",
+        "loading": "Loading..."
+    }
+}

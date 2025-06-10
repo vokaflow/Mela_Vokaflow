@@ -1,0 +1,16 @@
+{
+  "voice_id": "speaker_it_f01",
+  "name": "Linda",
+  "language": "it",
+  "gender": "female",
+  "description": "Voz femenina italiana",
+  "sample_files": [
+    "/opt/vokaflow/voices/native_speakers/it/female/speaker_it_f01/linda_sample.wav"
+  ],
+  "created_at": "2025-06-09T04:08:51.441855",
+  "is_native": true,
+  "quality_score": 1.0,
+  "accent": "it",
+  "voice_type": "real_human",
+  "original_file": "Linda Fiore_🇮🇹.mp3"
+}

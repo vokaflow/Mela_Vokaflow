@@ -1,0 +1,49 @@
+# Configuración SAA Enterprise
+
+# Parámetros de adaptación
+ventana_evaluacion: 5
+factor_adaptacion: 0.1
+variacion_aleatoria: 0.05
+umbral_estancamiento: 3
+
+# Límites de niveles
+nivel_minimo: 1
+nivel_maximo: 10
+
+# Estados adaptativos
+estados_disponibles:
+  - "exploracion"
+  - "explotacion" 
+  - "diversificacion"
+estado_inicial: "exploracion"
+
+# Umbrales de decisión
+umbral_rendimiento_alto: 0.85
+umbral_rendimiento_bajo: 0.4
+umbral_rendimiento_medio_min: 0.6
+umbral_rendimiento_medio_max: 0.8
+
+# Configuración asíncrona
+timeout_decision_segundos: 5.0
+max_concurrent_tasks: 10
+
+# Persistencia
+enable_persistence: true
+persistence_interval_minutes: 30
+max_history_size: 1000
+
+# Métricas y observabilidad
+enable_metrics: true
+metrics_detail_level: "full"
+
+# ML y algoritmos avanzados
+enable_ml_predictions: false
+ml_min_samples_required: 50
+ml_feature_count: 7
+
+# Seguridad
+enable_security_checks: true
+audit_logging: true
+
+# Logging
+log_level: "INFO"

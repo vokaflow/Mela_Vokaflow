@@ -1,0 +1,16 @@
+{
+  "voice_id": "speaker_it_m01",
+  "name": "Marco",
+  "language": "it",
+  "gender": "male",
+  "description": "Voz masculina italiana",
+  "sample_files": [
+    "/opt/vokaflow/voices/native_speakers/it/male/speaker_it_m01/marco_sample.wav"
+  ],
+  "created_at": "2025-06-09T04:08:51.234262",
+  "is_native": true,
+  "quality_score": 1.0,
+  "accent": "it",
+  "voice_type": "real_human",
+  "original_file": "MarcoTrox_🇮🇹.mp3"
+}

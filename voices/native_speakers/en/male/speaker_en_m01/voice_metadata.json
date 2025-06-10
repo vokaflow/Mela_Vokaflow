@@ -1,0 +1,16 @@
+{
+  "voice_id": "speaker_en_m01",
+  "name": "Liam",
+  "language": "en",
+  "gender": "male",
+  "description": "Voz masculina americana natural",
+  "sample_files": [
+    "/opt/vokaflow/voices/native_speakers/en/male/speaker_en_m03/liam_sample.wav"
+  ],
+  "created_at": "2025-06-09T04:08:51.041027",
+  "is_native": true,
+  "quality_score": 1.0,
+  "accent": "american",
+  "voice_type": "real_human",
+  "original_file": "Liam_en.mp3"
+}

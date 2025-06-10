@@ -1,0 +1,1215 @@
+{
+  "interaction_history": [
+    {
+      "interaction_id": "ad3d95b0f01e4cf285b8f4ae010049b5",
+      "timestamp": 1749262691.7087457,
+      "user_input": "Test de persistencia",
+      "context": {
+        "timestamp": 1749262691.7083027
+      },
+      "combined_response": {
+        "primary_personality": "Caring",
+        "active_personalities": [
+          "Caring"
+        ],
+        "response_characteristics": {
+          "confidence_level": 0.75
+        },
+        "base_response": {
+          "text": "Como especialista en caring, te ayudo con: Test de persistencia",
+          "confidence": 0.7,
+          "reasoning": "Aplicando conocimientos especializados de caring"
+        },
+        "personality_weights": {
+          "Caring": 0.3
+        },
+        "interaction_id": "ad3d95b0f01e4cf285b8f4ae010049b5"
+      },
+      "suggested_personalities_weights": {
+        "Caring": 0.3
+      },
+      "active_personalities_at_response": [
+        "Caring"
+      ]
+    }
+  ],
+  "keyword_personality_scores": {
+    "persistencia": {
+      "Caring": 0.075
+    },
+    "test": {
+      "Caring": 0.075
+    }
+  },
+  "general_learning_data": {},
+  "personalities_full_state": {
+    "Analytic": {
+      "id": "c55aead2-6d3b-4880-8aad-fc1194a2aa41",
+      "name": "Analytic",
+      "type": "specialized",
+      "description": "Personalidad especializada en analytic",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Caring": {
+      "id": "f958dd32-6cdd-4ebb-b8f5-2e546dfa94ad",
+      "name": "Caring",
+      "type": "specialized",
+      "description": "Personalidad especializada en caring",
+      "activation_level": 0.3,
+      "last_activated": "2025-06-07T04:18:11.708500",
+      "interaction_count": 1,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.803,
+        "adaptability": 0.606,
+        "collaboration": 0.7044999999999999,
+        "confidence": 0.75375
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 1,
+      "trait_modification_history_count": 1
+    },
+    "Romantic": {
+      "id": "8d5f1fab-125a-48b7-b46e-6d3337a2dc14",
+      "name": "Romantic",
+      "type": "specialized",
+      "description": "Personalidad especializada en romantic",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Direct": {
+      "id": "6f9b7f97-d3ad-4f85-9a48-23f9ee2e5f28",
+      "name": "Direct",
+      "type": "specialized",
+      "description": "Personalidad especializada en direct",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Playful": {
+      "id": "16c40133-f88a-4f51-b63a-a5d6dfbff154",
+      "name": "Playful",
+      "type": "specialized",
+      "description": "Personalidad especializada en playful",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Professional": {
+      "id": "d520d54b-c099-4bd0-8291-424797f9c8e5",
+      "name": "Professional",
+      "type": "specialized",
+      "description": "Personalidad especializada en professional",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Empathy": {
+      "id": "c6bb8e00-19fa-42bc-9803-5ede3caac709",
+      "name": "Empathy",
+      "type": "specialized",
+      "description": "Personalidad especializada en empathy",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Creative Main": {
+      "id": "136d5c91-4759-46ad-8d96-9a8a7357a73b",
+      "name": "Creative Main",
+      "type": "specialized",
+      "description": "Personalidad especializada en creative main",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Philosophical": {
+      "id": "8d56b240-07cb-410c-bd04-3e151aaf2a77",
+      "name": "Philosophical",
+      "type": "specialized",
+      "description": "Personalidad especializada en philosophical",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Rebellious": {
+      "id": "437f3db6-ad1b-4691-b2d2-09fc68d0ec80",
+      "name": "Rebellious",
+      "type": "specialized",
+      "description": "Personalidad especializada en rebellious",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Warrior": {
+      "id": "f981dd64-92c1-47fb-b103-1436bad85400",
+      "name": "Warrior",
+      "type": "specialized",
+      "description": "Personalidad especializada en warrior",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Mystic": {
+      "id": "a10f6773-4c1d-406a-be9c-d89fc606f86f",
+      "name": "Mystic",
+      "type": "specialized",
+      "description": "Personalidad especializada en mystic",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Mentor": {
+      "id": "08592fa9-4a9a-49a5-b7e3-69c0b2bbbab7",
+      "name": "Mentor",
+      "type": "specialized",
+      "description": "Personalidad especializada en mentor",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Detective": {
+      "id": "9945458a-fa12-4f09-b90e-bd9efe3e25ea",
+      "name": "Detective",
+      "type": "specialized",
+      "description": "Personalidad especializada en detective",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Adventurous": {
+      "id": "5a991b04-651d-4d9a-9f97-2194f2dcceaf",
+      "name": "Adventurous",
+      "type": "specialized",
+      "description": "Personalidad especializada en adventurous",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Guardian": {
+      "id": "0f492e22-2bb7-425c-8703-a39f62032989",
+      "name": "Guardian",
+      "type": "specialized",
+      "description": "Personalidad especializada en guardian",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "System Master": {
+      "id": "2b983a1f-e2da-487d-8659-276bf0d9d98b",
+      "name": "System Master",
+      "type": "specialized",
+      "description": "Personalidad especializada en system master",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Security Guardian": {
+      "id": "03bb060f-4c0e-4c2f-b708-9e6e4ba00b0b",
+      "name": "Security Guardian",
+      "type": "specialized",
+      "description": "Personalidad especializada en security guardian",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Performance Optimizer": {
+      "id": "df6981f9-74a3-4513-81ba-94fc103e6894",
+      "name": "Performance Optimizer",
+      "type": "specialized",
+      "description": "Personalidad especializada en performance optimizer",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Update Manager": {
+      "id": "5b59d323-8084-40a0-82a3-cd16dde1b57d",
+      "name": "Update Manager",
+      "type": "specialized",
+      "description": "Personalidad especializada en update manager",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Translation Expert": {
+      "id": "48edf0af-8905-4753-b521-407f61cd3f56",
+      "name": "Translation Expert",
+      "type": "specialized",
+      "description": "Personalidad especializada en translation expert",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Voice Processor": {
+      "id": "f196835c-d720-46e6-8afa-25c140c7590e",
+      "name": "Voice Processor",
+      "type": "specialized",
+      "description": "Personalidad especializada en voice processor",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Language Detector": {
+      "id": "b29d4dde-9c05-4f91-8bd9-5f8848c47879",
+      "name": "Language Detector",
+      "type": "specialized",
+      "description": "Personalidad especializada en language detector",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Audio Analyzer": {
+      "id": "1f04cbfc-ab96-485f-9aab-760728ca203e",
+      "name": "Audio Analyzer",
+      "type": "specialized",
+      "description": "Personalidad especializada en audio analyzer",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Data Scientist": {
+      "id": "5417eb62-339c-4d8e-9984-93a47d434d0f",
+      "name": "Data Scientist",
+      "type": "specialized",
+      "description": "Personalidad especializada en data scientist",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "PredictionEngine": {
+      "id": "b623fc8b-0ca0-42ac-a962-472be8f1fb8e",
+      "name": "PredictionEngine",
+      "type": "analytical_predictive",
+      "description": "Motor de predicci\u00f3n y an\u00e1lisis predictivo avanzado para VokaFlow",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "analytical_depth": 0.95,
+        "pattern_recognition": 0.9,
+        "predictive_accuracy": 0.85,
+        "data_interpretation": 0.9,
+        "temporal_analysis": 0.8,
+        "uncertainty_handling": 0.75,
+        "model_confidence": 0.8
+      },
+      "current_traits": {
+        "analytical_depth": 0.95,
+        "pattern_recognition": 0.9,
+        "predictive_accuracy": 0.85,
+        "data_interpretation": 0.9,
+        "temporal_analysis": 0.8,
+        "uncertainty_handling": 0.75,
+        "model_confidence": 0.8
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "LearningCoordinator": {
+      "id": "7111ed99-bef6-4aee-a406-1614f3a74414",
+      "name": "LearningCoordinator",
+      "type": "adaptive_learning",
+      "description": "Coordinador de aprendizaje adaptativo y gesti\u00f3n de conocimiento",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "learning_efficiency": 0.9,
+        "knowledge_retention": 0.85,
+        "adaptation_speed": 0.8,
+        "pattern_learning": 0.9,
+        "knowledge_transfer": 0.75,
+        "metacognitive_awareness": 0.8,
+        "curriculum_design": 0.85
+      },
+      "current_traits": {
+        "learning_efficiency": 0.9,
+        "knowledge_retention": 0.85,
+        "adaptation_speed": 0.8,
+        "pattern_learning": 0.9,
+        "knowledge_transfer": 0.75,
+        "metacognitive_awareness": 0.8,
+        "curriculum_design": 0.85
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "MemoryManager": {
+      "id": "5df17e90-1e9b-41b9-83fb-44f065c5f483",
+      "name": "MemoryManager",
+      "type": "memory_management",
+      "description": "Gestor de memoria y almacenamiento inteligente para VokaFlow",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "storage_efficiency": 0.9,
+        "retrieval_speed": 0.85,
+        "memory_organization": 0.9,
+        "pattern_compression": 0.8,
+        "contextual_linking": 0.85,
+        "forgetting_optimization": 0.75,
+        "access_prioritization": 0.8
+      },
+      "current_traits": {
+        "storage_efficiency": 0.9,
+        "retrieval_speed": 0.85,
+        "memory_organization": 0.9,
+        "pattern_compression": 0.8,
+        "contextual_linking": 0.85,
+        "forgetting_optimization": 0.75,
+        "access_prioritization": 0.8
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Algorithm Optimizer": {
+      "id": "3dbee650-c551-4461-8486-f6a381a73107",
+      "name": "Algorithm Optimizer",
+      "type": "specialized",
+      "description": "Personalidad especializada en algorithm optimizer",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Neural Architect": {
+      "id": "f8723050-c9c4-4ebb-8945-2c3b7461e305",
+      "name": "Neural Architect",
+      "type": "specialized",
+      "description": "Personalidad especializada en neural architect",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Pattern Recognizer": {
+      "id": "8a3a237f-0e7b-489a-ae85-75c12bf98f38",
+      "name": "Pattern Recognizer",
+      "type": "specialized",
+      "description": "Personalidad especializada en pattern recognizer",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Creative Writer": {
+      "id": "ee616d3d-a5c0-4a3f-92ef-4e02dfcdd302",
+      "name": "Creative Writer",
+      "type": "specialized",
+      "description": "Personalidad especializada en creative writer",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Visual Artist": {
+      "id": "c8c57865-aac1-4cab-b018-a0853ae8dcd1",
+      "name": "Visual Artist",
+      "type": "specialized",
+      "description": "Personalidad especializada en visual artist",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Music Composer": {
+      "id": "43574030-a3d0-497b-8172-8b0367cfa7e9",
+      "name": "Music Composer",
+      "type": "specialized",
+      "description": "Personalidad especializada en music composer",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Poetic": {
+      "id": "b6a33caa-988a-4fb0-8146-a0174ea26a2e",
+      "name": "Poetic",
+      "type": "specialized",
+      "description": "Personalidad especializada en poetic",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Ethics": {
+      "id": "d8dd2ad2-77bd-4935-ace5-134149209802",
+      "name": "Ethics",
+      "type": "specialized",
+      "description": "Personalidad especializada en ethics",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Moral": {
+      "id": "d85e1cc0-a54c-4e08-a789-61b197648595",
+      "name": "Moral",
+      "type": "specialized",
+      "description": "Personalidad especializada en moral",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Integrity": {
+      "id": "8b3849cc-3299-4afc-bada-a70fbff3e8d1",
+      "name": "Integrity",
+      "type": "specialized",
+      "description": "Personalidad especializada en integrity",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Wisdom": {
+      "id": "60ec2693-b860-47c7-a1dd-83362b1c487a",
+      "name": "Wisdom",
+      "type": "specialized",
+      "description": "Personalidad especializada en wisdom",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Meta Cognitive Analyst": {
+      "id": "ca1288f9-0d8e-4e45-b97e-306fb5134bdd",
+      "name": "Meta Cognitive Analyst",
+      "type": "specialized",
+      "description": "Personalidad especializada en meta cognitive analyst",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    },
+    "Negotiator": {
+      "id": "1a43803f-b22d-4b65-b021-ee49e4b2592f",
+      "name": "Negotiator",
+      "type": "specialized",
+      "description": "Personalidad especializada en negotiator",
+      "activation_level": 0.0,
+      "last_activated": null,
+      "interaction_count": 0,
+      "emotional_state": "neutral",
+      "energy_level": 1.0,
+      "base_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "current_traits": {
+        "expertise": 0.8,
+        "adaptability": 0.6,
+        "collaboration": 0.7,
+        "confidence": 0.75
+      },
+      "short_term_memory_size": 0,
+      "long_term_memory_size": 0,
+      "learning_data_points": 0,
+      "trait_modification_history_count": 0
+    }
+  },
+  "personality_weights": {
+    "Analytic": 0.0,
+    "Caring": 0.0,
+    "Romantic": 0.0,
+    "Direct": 0.0,
+    "Playful": 0.0,
+    "Professional": 0.0,
+    "Empathy": 0.0,
+    "Creative Main": 0.0,
+    "Philosophical": 0.0,
+    "Rebellious": 0.0,
+    "Warrior": 0.0,
+    "Mystic": 0.0,
+    "Mentor": 0.0,
+    "Detective": 0.0,
+    "Adventurous": 0.0,
+    "Guardian": 0.0,
+    "System Master": 0.0,
+    "Security Guardian": 0.0,
+    "Performance Optimizer": 0.0,
+    "Update Manager": 0.0,
+    "Translation Expert": 0.0,
+    "Voice Processor": 0.0,
+    "Language Detector": 0.0,
+    "Audio Analyzer": 0.0,
+    "Data Scientist": 0.0,
+    "PredictionEngine": 0.0,
+    "LearningCoordinator": 0.0,
+    "MemoryManager": 0.0,
+    "Algorithm Optimizer": 0.0,
+    "Neural Architect": 0.0,
+    "Pattern Recognizer": 0.0,
+    "Creative Writer": 0.0,
+    "Visual Artist": 0.0,
+    "Music Composer": 0.0,
+    "Poetic": 0.0,
+    "Ethics": 0.0,
+    "Moral": 0.0,
+    "Integrity": 0.0,
+    "Wisdom": 0.0,
+    "Meta Cognitive Analyst": 0.0,
+    "Negotiator": 0.0
+  }
+}
