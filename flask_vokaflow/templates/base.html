@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VokaFlow{% endblock %}</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    {% block extra_css %}{% endblock %}
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="{{ url_for('index') }}" class="brand-link">
+                    <i class="fas fa-microphone-alt"></i>
+                    <span>VokaFlow</span>
+                </a>
+            </div>
+
+            <div class="nav-menu">
+                <a href="{{ url_for('index') }}" class="nav-link {{ 'active' if request.endpoint == 'index' else '' }}">
+                    <i class="fas fa-home"></i>
+                    <span>Inicio</span>
+                </a>
+                <a href="{{ url_for('chat') }}" class="nav-link {{ 'active' if request.endpoint == 'chat' else '' }}">
+                    <i class="fas fa-comments"></i>
+                    <span>Chat IA</span>
+                </a>
+                <a href="{{ url_for('translator') }}"
+                    class="nav-link {{ 'active' if request.endpoint == 'translator' else '' }}">
+                    <i class="fas fa-language"></i>
+                    <span>Traductor</span>
+                </a>
+            </div>
+
+            <div class="nav-actions">
+                <button class="status-indicator" id="status-btn" title="Estado del sistema">
+                    <i class="fas fa-circle"></i>
+                </button>
+                <button class="theme-toggle" id="theme-toggle" title="Cambiar tema">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <p>&copy; {{ current_year or 2024 }} VokaFlow. Sistema de comunicación inteligente.</p>
+            </div>
+            <div class="footer-section">
+                <span class="status-info">
+                    Backend: <span id="backend-status">Conectando...</span>
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p id="loading-text">Procesando...</p>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notification-container"></div>
+
+    <!-- Common JavaScript -->
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

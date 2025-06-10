@@ -56,7 +56,6 @@ from contextlib import asynccontextmanager
 
 # Importaciones de routers principales
 from src.backend.routers.health import router as health_router
-from VickyAI.api.router import router as vicky_router
 from src.backend.routers.auth import router as auth_router
 from src.backend.routers.users import router as users_router
 from src.backend.routers.tts import router as tts_router
@@ -390,7 +389,7 @@ app.add_middleware(
 )
 
 # Montar archivos estáticos
-app.mount("/static", StaticFiles(directory="src/static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Rutas para documentación personalizada
 @app.get("/docs", include_in_schema=False)
@@ -525,7 +524,6 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # Registrar todos los routers
 app.include_router(health_router, prefix=f"{settings.API_PREFIX}/health", tags=["Health"])
-app.include_router(vicky_router, prefix=f"{settings.API_PREFIX}", tags=["Vicky AI Enterprise"])
 app.include_router(auth_router, prefix=f"{settings.API_PREFIX}/auth", tags=["Auth"])
 app.include_router(users_router, prefix=f"{settings.API_PREFIX}/users", tags=["Users"])
 app.include_router(tts_router, prefix=f"{settings.API_PREFIX}/tts", tags=["TTS"])

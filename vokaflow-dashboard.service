@@ -1,0 +1,43 @@
+[Unit]
+Description=VokaFlow Flask Dashboard - Chat & Translator WebApp
+Documentation=https://vokaflow.com/docs
+After=network.target vokaflow-system.service
+Wants=network.target
+Requires=vokaflow-system.service
+
+[Service]
+Type=simple
+User=dw7
+Group=dw7
+WorkingDirectory=/opt/vokaflow
+Environment=PYTHONPATH=/opt/vokaflow
+Environment=FLASK_ENV=production
+Environment=FLASK_DEBUG=false
+Environment=BACKEND_URL=http://localhost:8000
+
+# Comando de inicio
+ExecStart=/opt/vokaflow/start_flask_dashboard.sh
+ExecStop=/bin/kill -TERM $MAINPID
+
+# Configuración de reinicio automático
+Restart=always
+RestartSec=10
+StartLimitInterval=60s
+StartLimitBurst=3
+
+# Límites de recursos
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=vokaflow-dashboard
+
+# Seguridad
+PrivateDevices=false
+ProtectSystem=false
+ProtectHome=false
+
+[Install]
+WantedBy=multi-user.target

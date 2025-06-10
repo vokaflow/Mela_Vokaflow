@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Chat con IA - VokaFlow{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <!-- Chat Header -->
+    <div class="chat-header">
+        <div class="chat-info">
+            <div class="chat-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="chat-details">
+                <h2 class="chat-title">Asistente IA</h2>
+                <p class="chat-status" id="chat-status">
+                    <span class="status-indicator online"></span>
+                    En línea
+                </p>
+            </div>
+        </div>
+        <div class="chat-actions">
+            <button class="action-button" id="clear-chat" title="Limpiar conversación">
+                <i class="fas fa-trash"></i>
+            </button>
+            <button class="action-button" id="voice-toggle" title="Activar/Desactivar respuestas por voz">
+                <i class="fas fa-volume-up"></i>
+            </button>
+            <button class="action-button" id="settings-toggle" title="Configuración">
+                <i class="fas fa-cog"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div class="chat-messages" id="chat-messages">
+        <div class="message-container ai-message">
+            <div class="message-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    <p>¡Hola! Soy tu asistente de IA. Puedes escribir tu mensaje o usar el micrófono para hablar
+                        conmigo. ¿En qué puedo ayudarte hoy?</p>
+                </div>
+                <div class="message-meta">
+                    <span class="message-time">Ahora</span>
+                    <button class="play-audio" style="display: none;">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Input -->
+    <div class="chat-input-container">
+        <div class="input-wrapper">
+            <div class="input-group">
+                <button class="voice-button" id="voice-button" title="Mantén presionado para hablar">
+                    <i class="fas fa-microphone"></i>
+                    <span class="voice-indicator"></span>
+                </button>
+                <textarea id="message-input" placeholder="Escribe tu mensaje aquí..." rows="1"
+                    maxlength="2000"></textarea>
+                <button class="send-button" id="send-button" title="Enviar mensaje">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="input-meta">
+                <div class="char-counter">
+                    <span id="char-count">0</span>/2000
+                </div>
+                <div class="recording-status" id="recording-status" style="display: none;">
+                    <span class="recording-dot"></span>
+                    Grabando... <span id="recording-time">0:00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settings-panel" style="display: none;">
+        <div class="settings-header">
+            <h3>Configuración del Chat</h3>
+            <button class="close-settings" id="close-settings">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="settings-content">
+            <div class="setting-group">
+                <label for="ai-provider">Proveedor de IA:</label>
+                <select id="ai-provider">
+                    <option value="openai">OpenAI GPT</option>
+                    <option value="anthropic">Anthropic Claude</option>
+                    <option value="huggingface">Hugging Face</option>
+                    <option value="fallback">Demo (Sin IA)</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="voice-enabled">Respuestas por voz:</label>
+                <input type="checkbox" id="voice-enabled" checked>
+            </div>
+            <div class="setting-group">
+                <label for="auto-play">Reproducir automáticamente:</label>
+                <input type="checkbox" id="auto-play">
+            </div>
+            <div class="setting-group">
+                <label for="language-input">Idioma de entrada:</label>
+                <select id="language-input">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                    <option value="auto">Detectar automáticamente</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="voice-speed">Velocidad de voz:</label>
+                <input type="range" id="voice-speed" min="0.5" max="2" step="0.1" value="1">
+                <span id="voice-speed-value">1.0x</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Player (Hidden) -->
+    <audio id="audio-player" preload="none"></audio>
+
+    <!-- Typing Indicator -->
+    <div class="typing-indicator" id="typing-indicator" style="display: none;">
+        <div class="message-container ai-message">
+            <div class="message-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="message-content">
+                <div class="message-bubble typing">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Context Menu for Messages -->
+<div class="context-menu" id="context-menu" style="display: none;">
+    <ul>
+        <li data-action="copy">
+            <i class="fas fa-copy"></i>
+            Copiar texto
+        </li>
+        <li data-action="speak">
+            <i class="fas fa-volume-up"></i>
+            Leer en voz alta
+        </li>
+        <li data-action="translate">
+            <i class="fas fa-language"></i>
+            Traducir
+        </li>
+        <li data-action="regenerate" class="ai-only">
+            <i class="fas fa-redo"></i>
+            Regenerar respuesta
+        </li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}VokaFlow - Inicio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    <span class="gradient-text">VokaFlow</span>
+                    <span class="hero-subtitle">Comunicación Inteligente</span>
+                </h1>
+                <p class="hero-description">
+                    Experimenta el futuro de la comunicación con IA avanzada y traducción en tiempo real.
+                    Habla, escribe, traduce y conecta sin barreras.
+                </p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">40+</span>
+                        <span class="stat-label">Idiomas</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">AI</span>
+                        <span class="stat-label">Powered</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Disponible</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="floating-icon">
+                    <i class="fas fa-microphone-alt"></i>
+                </div>
+                <div class="floating-icon delay-1">
+                    <i class="fas fa-language"></i>
+                </div>
+                <div class="floating-icon delay-2">
+                    <i class="fas fa-comments"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Features -->
+    <section class="features">
+        <div class="features-grid">
+            <!-- Chat IA Feature -->
+            <div class="feature-card chat-card">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="feature-content">
+                    <h3 class="feature-title">Chat con IA</h3>
+                    <p class="feature-description">
+                        Conversa con inteligencia artificial avanzada. Obtén respuestas inteligentes,
+                        ayuda personalizada y soporte las 24 horas.
+                    </p>
+                    <div class="feature-highlights">
+                        <span class="highlight">
+                            <i class="fas fa-microphone"></i>
+                            Entrada por voz
+                        </span>
+                        <span class="highlight">
+                            <i class="fas fa-volume-up"></i>
+                            Respuestas en audio
+                        </span>
+                        <span class="highlight">
+                            <i class="fas fa-brain"></i>
+                            IA Avanzada
+                        </span>
+                    </div>
+                    <a href="{{ url_for('chat') }}" class="feature-button">
+                        <span>Comenzar Chat</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Traductor Feature -->
+            <div class="feature-card translator-card">
+                <div class="feature-icon">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <div class="feature-content">
+                    <h3 class="feature-title">Traductor Universal</h3>
+                    <p class="feature-description">
+                        Traduce texto y audio entre más de 40 idiomas con precisión profesional.
+                        Comunicación sin barreras.
+                    </p>
+                    <div class="feature-highlights">
+                        <span class="highlight">
+                            <i class="fas fa-language"></i>
+                            40+ Idiomas
+                        </span>
+                        <span class="highlight">
+                            <i class="fas fa-magic"></i>
+                            Detección automática
+                        </span>
+                        <span class="highlight">
+                            <i class="fas fa-headphones"></i>
+                            Audio bidireccional
+                        </span>
+                    </div>
+                    <a href="{{ url_for('translator') }}" class="feature-button">
+                        <span>Abrir Traductor</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Capabilities Section -->
+    <section class="capabilities">
+        <div class="capabilities-header">
+            <h2 class="section-title">Capacidades Avanzadas</h2>
+            <p class="section-description">
+                Tecnología de última generación para una experiencia de comunicación superior
+            </p>
+        </div>
+
+        <div class="capabilities-grid">
+            <div class="capability">
+                <div class="capability-icon">
+                    <i class="fas fa-microphone-alt"></i>
+                </div>
+                <h4 class="capability-title">Reconocimiento de Voz</h4>
+                <p class="capability-description">
+                    Whisper AI para transcripción precisa en múltiples idiomas
+                </p>
+            </div>
+
+            <div class="capability">
+                <div class="capability-icon">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+                <h4 class="capability-title">Síntesis de Voz</h4>
+                <p class="capability-description">
+                    XTTS-V2 para voces naturales y expresivas en tiempo real
+                </p>
+            </div>
+
+            <div class="capability">
+                <div class="capability-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h4 class="capability-title">IA Conversacional</h4>
+                <p class="capability-description">
+                    Modelos de lenguaje avanzados para conversaciones naturales
+                </p>
+            </div>
+
+            <div class="capability">
+                <div class="capability-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <h4 class="capability-title">Traducción Inteligente</h4>
+                <p class="capability-description">
+                    Traducción contextual con preservación del significado
+                </p>
+            </div>
+
+            <div class="capability">
+                <div class="capability-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h4 class="capability-title">Tiempo Real</h4>
+                <p class="capability-description">
+                    Procesamiento ultrarrápido para conversaciones fluidas
+                </p>
+            </div>
+
+            <div class="capability">
+                <div class="capability-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h4 class="capability-title">Privacidad Garantizada</h4>
+                <p class="capability-description">
+                    Datos seguros con procesamiento local y encriptación
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+        <div class="actions-container">
+            <h3 class="actions-title">¿Qué quieres hacer hoy?</h3>
+            <div class="actions-grid">
+                <button class="action-btn" data-action="navigate" data-url="{{ url_for('chat') }}">
+                    <i class="fas fa-comments"></i>
+                    <span>Chatear con IA</span>
+                </button>
+                <button class="action-btn" data-action="navigate" data-url="{{ url_for('translator') }}">
+                    <i class="fas fa-language"></i>
+                    <span>Traducir Texto</span>
+                </button>
+                <button class="action-btn" onclick="testMicrophone()">
+                    <i class="fas fa-microphone"></i>
+                    <span>Probar Micrófono</span>
+                </button>
+                <button class="action-btn" onclick="checkSystemStatus()">
+                    <i class="fas fa-cog"></i>
+                    <span>Estado del Sistema</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- System Status -->
+    <section class="system-status" id="system-status">
+        <div class="status-container">
+            <h4 class="status-title">
+                <i class="fas fa-heartbeat"></i>
+                Estado del Sistema
+            </h4>
+            <div class="status-grid" id="status-grid">
+                <div class="status-item">
+                    <span class="status-label">Backend</span>
+                    <span class="status-value" id="backend-status-value">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        Verificando...
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">IA Configurada</span>
+                    <span class="status-value" id="ai-status-value">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        Verificando...
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Funciones</span>
+                    <span class="status-value" id="features-status-value">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        Verificando...
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}
