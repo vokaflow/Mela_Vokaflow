@@ -8,34 +8,34 @@
 
 {% block content %}
 <div class="translator-container">
-    <!-- Translator Header -->
+    <!-- Header del traductor -->
     <div class="translator-header">
         <div class="header-content">
             <h1 class="translator-title">
-                <i class="fas fa-globe"></i>
+                <i class="fas fa-language"></i>
                 Traductor Universal
             </h1>
             <p class="translator-subtitle">
                 Traduce texto y audio entre más de 40 idiomas con precisión profesional
             </p>
-        </div>
-        <div class="translator-stats">
-            <div class="stat">
-                <span class="stat-number">40+</span>
-                <span class="stat-label">Idiomas</span>
-            </div>
-            <div class="stat">
-                <span class="stat-number">AI</span>
-                <span class="stat-label">Powered</span>
-            </div>
-            <div class="stat">
-                <span class="stat-number">Real</span>
-                <span class="stat-label">Time</span>
+            <div class="translator-stats">
+                <div class="stat">
+                    <span class="stat-number">40+</span>
+                    <span class="stat-label">Idiomas</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">AI Powered</span>
+                    <span class="stat-label">Tecnología</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">Real Time</span>
+                    <span class="stat-label">Velocidad</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Language Selector -->
+    <!-- Selector de idiomas -->
     <div class="language-selector">
         <div class="language-group">
             <label for="source-language">Desde:</label>
@@ -85,13 +85,13 @@
         </div>
     </div>
 
-    <!-- Translation Panel -->
+    <!-- Panel de traducción -->
     <div class="translation-panel">
-        <!-- Source Panel -->
+        <!-- Panel de texto origen -->
         <div class="text-panel source-panel">
             <div class="panel-header">
                 <div class="panel-title">
-                    <span class="language-name" id="source-language-name">Español</span>
+                    <span id="source-language-name">Español</span>
                     <span class="detected-info" id="detected-info" style="display: none;">
                         (Detectado: <span id="detected-language"></span>)
                     </span>
@@ -101,50 +101,48 @@
                         <i class="fas fa-microphone"></i>
                     </button>
                     <button class="panel-button" id="source-clear" title="Limpiar texto">
-                        <i class="fas fa-times"></i>
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
             <div class="panel-content">
-                <textarea id="source-text" placeholder="Escribe o habla el texto que quieres traducir..."
-                    maxlength="5000" rows="8"></textarea>
+                <textarea id="source-text" placeholder="Escribe aquí el texto a traducir..."
+                    maxlength="5000"></textarea>
                 <div class="panel-meta">
-                    <span class="char-counter">
-                        <span id="source-char-count">0</span>/5000
-                    </span>
+                    <span><span id="source-char-count">0</span>/5000</span>
                     <div class="recording-indicator" id="source-recording" style="display: none;">
-                        <span class="recording-dot"></span>
-                        Grabando... <span id="source-recording-time">0:00</span>
+                        <div class="recording-dot"></div>
+                        <span id="source-recording-time">0:00</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Translation Actions -->
+        <!-- Acciones de traducción -->
         <div class="translation-actions">
-            <button class="translate-button" id="translate-button">
-                <i class="fas fa-arrow-right"></i>
-                <span>Traducir</span>
+            <button class="translate-button" id="translate-button" disabled>
+                <i class="fas fa-exchange-alt"></i>
+                Traducir
             </button>
-            <button class="translate-audio-button" id="translate-audio-button" title="Traducir audio completo">
-                <i class="fas fa-headphones"></i>
+            <button class="translate-audio-button" id="translate-audio-button" title="Traducir a audio">
+                <i class="fas fa-volume-up"></i>
             </button>
         </div>
 
-        <!-- Target Panel -->
+        <!-- Panel de texto traducido -->
         <div class="text-panel target-panel">
             <div class="panel-header">
                 <div class="panel-title">
-                    <span class="language-name" id="target-language-name">English</span>
+                    <span id="target-language-name">English</span>
                     <span class="confidence-info" id="confidence-info" style="display: none;">
-                        Confianza: <span id="confidence-value">--</span>%
+                        (Confianza: <span id="confidence-value"></span>%)
                     </span>
                 </div>
                 <div class="panel-actions">
                     <button class="panel-button" id="target-copy" title="Copiar traducción">
                         <i class="fas fa-copy"></i>
                     </button>
-                    <button class="panel-button" id="target-speak" title="Escuchar traducción">
+                    <button class="panel-button" id="target-speak" title="Reproducir audio">
                         <i class="fas fa-volume-up"></i>
                     </button>
                     <button class="panel-button" id="target-share" title="Compartir traducción">
@@ -153,7 +151,7 @@
                 </div>
             </div>
             <div class="panel-content">
-                <div id="target-text" class="translation-result">
+                <div class="translation-result" id="target-text">
                     <div class="placeholder-text">
                         <i class="fas fa-language"></i>
                         <p>La traducción aparecerá aquí</p>
@@ -161,17 +159,17 @@
                 </div>
                 <div class="panel-meta">
                     <span class="translation-info" id="translation-info" style="display: none;">
-                        Traducido en <span id="translation-time">--</span>s
+                        Traducido en <span id="translation-time"></span>s
                     </span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
+    <!-- Acciones rápidas -->
     <div class="quick-actions">
         <div class="action-group">
-            <h3>Acciones Rápidas</h3>
+            <h3><i class="fas fa-bolt"></i> Acciones Rápidas</h3>
             <div class="action-buttons">
                 <button class="quick-action" data-action="clear-all">
                     <i class="fas fa-eraser"></i>
@@ -183,28 +181,25 @@
                 </button>
                 <button class="quick-action" data-action="save-translation">
                     <i class="fas fa-save"></i>
-                    <span>Guardar</span>
+                    <span>Guardar Traducción</span>
                 </button>
                 <button class="quick-action" data-action="speak-both">
-                    <i class="fas fa-headphones"></i>
-                    <span>Escuchar Ambos</span>
+                    <i class="fas fa-comments"></i>
+                    <span>Reproducir Ambos</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Translation History -->
+    <!-- Historial de traducciones -->
     <div class="translation-history">
         <div class="history-header">
-            <h3>
-                <i class="fas fa-history"></i>
-                Historial de Traducciones
-            </h3>
+            <h3><i class="fas fa-history"></i> Historial Reciente</h3>
             <button class="clear-history" id="clear-history" title="Limpiar historial">
                 <i class="fas fa-trash"></i>
             </button>
         </div>
-        <div class="history-content" id="history-content">
+        <div id="history-content">
             <div class="history-empty">
                 <i class="fas fa-clock"></i>
                 <p>No hay traducciones recientes</p>
@@ -212,53 +207,68 @@
         </div>
     </div>
 
-    <!-- Popular Translations -->
+    <!-- Traducciones populares -->
     <div class="popular-translations">
-        <h3>Traducciones Populares</h3>
+        <h3><i class="fas fa-star"></i> Traducciones Populares</h3>
         <div class="popular-grid">
-            <div class="popular-item" data-source="Hola, ¿cómo estás?" data-source-lang="es" data-target-lang="en">
+            <div class="popular-item" data-source="hola" data-source-lang="es" data-target-lang="en">
                 <div class="popular-text">
-                    <span class="source">Hola, ¿cómo estás?</span>
+                    <span class="source">Hola</span>
                     <i class="fas fa-arrow-right"></i>
-                    <span class="target">Hello, how are you?</span>
+                    <span class="target">Hello</span>
                 </div>
                 <div class="popular-langs">ES → EN</div>
             </div>
 
-            <div class="popular-item" data-source="Thank you very much" data-source-lang="en" data-target-lang="es">
+            <div class="popular-item" data-source="gracias" data-source-lang="es" data-target-lang="en">
                 <div class="popular-text">
-                    <span class="source">Thank you very much</span>
+                    <span class="source">Gracias</span>
                     <i class="fas fa-arrow-right"></i>
-                    <span class="target">Muchas gracias</span>
+                    <span class="target">Thank you</span>
                 </div>
-                <div class="popular-langs">EN → ES</div>
+                <div class="popular-langs">ES → EN</div>
             </div>
 
-            <div class="popular-item" data-source="Je voudrais un café" data-source-lang="fr" data-target-lang="es">
+            <div class="popular-item" data-source="buenos días" data-source-lang="es" data-target-lang="en">
                 <div class="popular-text">
-                    <span class="source">Je voudrais un café</span>
+                    <span class="source">Buenos días</span>
                     <i class="fas fa-arrow-right"></i>
-                    <span class="target">Quisiera un café</span>
+                    <span class="target">Good morning</span>
                 </div>
-                <div class="popular-langs">FR → ES</div>
+                <div class="popular-langs">ES → EN</div>
             </div>
 
-            <div class="popular-item" data-source="Wo ist der Bahnhof?" data-source-lang="de" data-target-lang="es">
+            <div class="popular-item" data-source="¿cómo estás?" data-source-lang="es" data-target-lang="en">
                 <div class="popular-text">
-                    <span class="source">Wo ist der Bahnhof?</span>
+                    <span class="source">¿Cómo estás?</span>
                     <i class="fas fa-arrow-right"></i>
-                    <span class="target">¿Dónde está la estación?</span>
+                    <span class="target">How are you?</span>
                 </div>
-                <div class="popular-langs">DE → ES</div>
+                <div class="popular-langs">ES → EN</div>
+            </div>
+
+            <div class="popular-item" data-source="por favor" data-source-lang="es" data-target-lang="en">
+                <div class="popular-text">
+                    <span class="source">Por favor</span>
+                    <i class="fas fa-arrow-right"></i>
+                    <span class="target">Please</span>
+                </div>
+                <div class="popular-langs">ES → EN</div>
+            </div>
+
+            <div class="popular-item" data-source="disculpe" data-source-lang="es" data-target-lang="en">
+                <div class="popular-text">
+                    <span class="source">Disculpe</span>
+                    <i class="fas fa-arrow-right"></i>
+                    <span class="target">Excuse me</span>
+                </div>
+                <div class="popular-langs">ES → EN</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Audio Player (Hidden) -->
-<audio id="audio-player" preload="none"></audio>
-
-<!-- Loading Overlay for Translation -->
+<!-- Loading overlay -->
 <div class="translation-loading" id="translation-loading" style="display: none;">
     <div class="loading-content">
         <div class="loading-spinner"></div>
@@ -266,14 +276,16 @@
     </div>
 </div>
 
-<!-- Success Toast -->
+<!-- Toast para notificaciones -->
 <div class="toast" id="success-toast" style="display: none;">
     <i class="fas fa-check-circle"></i>
-    <span id="toast-message">Texto copiado al portapapeles</span>
+    <span id="toast-message">Operación completada</span>
 </div>
+
+<!-- Reproductor de audio oculto -->
+<audio id="audio-player" preload="none"></audio>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
 <script src="{{ url_for('static', filename='js/translator.js') }}"></script>
 {% endblock %}

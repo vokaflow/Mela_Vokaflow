@@ -64,6 +64,8 @@ from src.backend.routers.voice import router as voice_router
 from src.backend.routers.conversations import router as conversations_router
 from src.backend.routers.files import router as files_router
 from src.backend.routers.high_scale_tasks import router as high_scale_tasks_router
+from src.backend.routers.translation import router as translation_router
+from src.backend.routers.chat import router as chat_router
 
 # Configuración de logging
 logs_dir = os.path.join(os.getcwd(), 'logs')
@@ -532,6 +534,8 @@ app.include_router(voice_router, prefix=f"{settings.API_PREFIX}/voice", tags=["V
 app.include_router(conversations_router, prefix=f"{settings.API_PREFIX}/conversations", tags=["Conversations"])
 app.include_router(files_router, prefix=f"{settings.API_PREFIX}/files", tags=["Files"])
 app.include_router(high_scale_tasks_router, prefix=f"{settings.API_PREFIX}", tags=["High Scale Tasks"])
+app.include_router(translation_router, prefix=f"{settings.API_PREFIX}/translate", tags=["Translation"])
+app.include_router(chat_router, prefix=f"{settings.API_PREFIX}/chat", tags=["Chat", "Vicky AI"])
 
 # Ruta raíz
 @app.get("/")

@@ -22,6 +22,15 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import secrets
 
+# Importaciones para DeepSeek local
+try:
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+    import torch
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
+    logging.warning("transformers not available - DeepSeek local support disabled")
+
 # Cargar variables de entorno
 load_dotenv()
 
@@ -125,20 +134,163 @@ class VokaFlowService:
             return {'error': f'Error de conexión: {str(e)}'}
     
     def translate_text(self, text: str, source_lang: str, target_lang: str) -> Dict[str, Any]:
-        """Traduce texto usando el backend (simulado por ahora)"""
+        """Traduce texto usando el backend real"""
         try:
-            # TODO: Implementar cuando tengas el endpoint de traducción en el backend
-            # Por ahora simulo la respuesta
-            return {
-                'translated_text': f"[Traducción de '{text}' de {source_lang} a {target_lang}]",
+            data = {
+                'text': text,
                 'source_lang': source_lang,
-                'target_lang': target_lang,
-                'confidence': 0.95
+                'target_lang': target_lang
             }
+            
+            response = self.session.post(
+                f"{self.backend_url}/api/translate/text",
+                json=data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logger.error(f"Error traducción: {response.status_code} - {response.text}")
+                return {'error': f'Error en traducción: {response.status_code}'}
                 
         except Exception as e:
             logger.error(f"Error en translate_text: {e}")
             return {'error': f'Error de conexión: {str(e)}'}
+    
+    def _simulate_translation(self, text: str, source_lang: str, target_lang: str) -> str:
+        """Simula traducción inteligente basada en patrones"""
+        
+        # Diccionario de traducciones comunes
+        translations_db = {
+            ('es', 'en'): {
+                'hola': 'hello',
+                'como estas': 'how are you',
+                'buenos dias': 'good morning',
+                'buenas tardes': 'good afternoon',
+                'buenas noches': 'good evening',
+                'gracias': 'thank you',
+                'de nada': 'you\'re welcome',
+                'por favor': 'please',
+                'disculpe': 'excuse me',
+                'lo siento': 'I\'m sorry',
+                'si': 'yes',
+                'no': 'no',
+                'agua': 'water',
+                'comida': 'food',
+                'hotel': 'hotel',
+                'restaurante': 'restaurant',
+                'donde esta': 'where is',
+                'cuanto cuesta': 'how much does it cost',
+                'habla ingles': 'do you speak english'
+            },
+            ('en', 'es'): {
+                'hello': 'hola',
+                'how are you': 'como estas',
+                'good morning': 'buenos dias',
+                'good afternoon': 'buenas tardes',
+                'good evening': 'buenas noches',
+                'thank you': 'gracias',
+                'you\'re welcome': 'de nada',
+                'please': 'por favor',
+                'excuse me': 'disculpe',
+                'i\'m sorry': 'lo siento',
+                'yes': 'si',
+                'no': 'no',
+                'water': 'agua',
+                'food': 'comida',
+                'hotel': 'hotel',
+                'restaurant': 'restaurante',
+                'where is': 'donde esta',
+                'how much does it cost': 'cuanto cuesta',
+                'do you speak english': 'habla ingles'
+            },
+            ('es', 'fr'): {
+                'hola': 'bonjour',
+                'gracias': 'merci',
+                'por favor': 's\'il vous plaît',
+                'agua': 'eau',
+                'comida': 'nourriture'
+            },
+            ('es', 'de'): {
+                'hola': 'hallo',
+                'gracias': 'danke',
+                'por favor': 'bitte',
+                'agua': 'wasser',
+                'comida': 'essen'
+            }
+        }
+        
+        text_lower = text.lower().strip()
+        translation_key = (source_lang, target_lang)
+        
+        # Buscar traducción exacta
+        if translation_key in translations_db:
+            if text_lower in translations_db[translation_key]:
+                return translations_db[translation_key][text_lower]
+            
+            # Buscar coincidencias parciales
+            for phrase, translation in translations_db[translation_key].items():
+                if phrase in text_lower:
+                    return text_lower.replace(phrase, translation)
+        
+        # Traducción genérica si no se encuentra coincidencia
+        lang_names = {
+            'es': 'español',
+            'en': 'inglés',
+            'fr': 'francés',
+            'de': 'alemán',
+            'it': 'italiano',
+            'pt': 'portugués'
+        }
+        
+        source_name = lang_names.get(source_lang, source_lang)
+        target_name = lang_names.get(target_lang, target_lang)
+        
+        return f"[Traducción de '{text}' del {source_name} al {target_name}]"
+    
+    def _detect_language(self, text: str, provided_lang: str) -> str:
+        """Detecta el idioma del texto"""
+        if provided_lang != 'auto':
+            return provided_lang
+        
+        # Palabras comunes por idioma para detección simple
+        language_patterns = {
+            'es': ['el', 'la', 'de', 'que', 'y', 'en', 'un', 'es', 'se', 'no', 'te', 'lo', 'le', 'da', 'su', 'por', 'son', 'con', 'para', 'como', 'está', 'hola', 'gracias'],
+            'en': ['the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i', 'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at', 'hello', 'thank'],
+            'fr': ['le', 'de', 'et', 'à', 'un', 'il', 'être', 'et', 'en', 'avoir', 'que', 'pour', 'dans', 'ce', 'son', 'une', 'sur', 'avec', 'ne', 'se', 'bonjour', 'merci'],
+            'de': ['der', 'die', 'und', 'in', 'den', 'von', 'zu', 'das', 'mit', 'sich', 'des', 'auf', 'für', 'ist', 'im', 'dem', 'nicht', 'ein', 'eine', 'als', 'hallo', 'danke']
+        }
+        
+        text_lower = text.lower()
+        scores = {}
+        
+        for lang, words in language_patterns.items():
+            score = sum(1 for word in words if word in text_lower)
+            scores[lang] = score
+        
+        # Retornar el idioma con mayor puntuación
+        detected = max(scores, key=scores.get) if scores else 'es'
+        return detected if scores[detected] > 0 else 'es'
+    
+    def _calculate_confidence(self, original: str, translation: str) -> float:
+        """Calcula la confianza de la traducción"""
+        if not original or not translation:
+            return 0.0
+        
+        # Factores que afectan la confianza
+        length_factor = min(len(original) / 50, 1.0)  # Textos más largos = mayor confianza
+        
+        # Si es una traducción genérica (contiene corchetes), menor confianza
+        if '[' in translation and ']' in translation:
+            base_confidence = 0.6
+        else:
+            base_confidence = 0.9
+        
+        # Ajustar por longitud
+        final_confidence = base_confidence * (0.5 + 0.5 * length_factor)
+        
+        return round(final_confidence, 2)
 
 # Servicios de IA
 class AIService:
@@ -149,6 +301,26 @@ class AIService:
         self.api_key = api_key
         self.model = model
         self.session = requests.Session()
+        
+        # Cargar modelo DeepSeek local si está disponible
+        self.deepseek_model = None
+        self.deepseek_tokenizer = None
+        if provider == 'deepseek-local' and TRANSFORMERS_AVAILABLE:
+            self._load_deepseek_model()
+    
+    def _load_deepseek_model(self):
+        """Cargar modelo DeepSeek local"""
+        try:
+            model_path = "/opt/vokaflow/models/deepseek-r1"
+            if os.path.exists(model_path):
+                logger.info("Cargando modelo DeepSeek local...")
+                # Por ahora usamos una implementación simplificada
+                # TODO: Implementar carga real del modelo cuando sea compatible
+                logger.info("DeepSeek local configurado (modo simulado)")
+            else:
+                logger.warning(f"Modelo DeepSeek no encontrado en {model_path}")
+        except Exception as e:
+            logger.error(f"Error cargando DeepSeek: {e}")
     
     def chat_completion(self, messages: list, system_prompt: str = None) -> Dict[str, Any]:
         """Genera respuesta de chat usando la IA configurada"""
@@ -159,6 +331,8 @@ class AIService:
                 return self._anthropic_chat(messages, system_prompt)
             elif self.provider == 'huggingface':
                 return self._huggingface_chat(messages, system_prompt)
+            elif self.provider == 'deepseek-local':
+                return self._deepseek_local_chat(messages, system_prompt)
             else:
                 return self._fallback_response(messages[-1]['content'] if messages else "")
                 
@@ -229,6 +403,141 @@ class AIService:
         # TODO: Implementar Hugging Face
         return self._fallback_response(messages[-1]['content'] if messages else "")
     
+    def _deepseek_local_chat(self, messages: list, system_prompt: str = None) -> Dict[str, Any]:
+        """Chat con Vicky AI usando el backend real"""
+        try:
+            user_message = messages[-1]['content'] if messages else ""
+            
+            # Usar el backend real para chat con Vicky
+            data = {
+                'message': user_message,
+                'include_voice': False,  # Solo texto por ahora
+                'voice_speed': 1.0
+            }
+            
+            response = requests.post(
+                f"{config.BACKEND_URL}/api/chat/message",
+                json=data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                return {
+                    'response': result['response'],
+                    'provider': 'vicky-ai',
+                    'model': 'deepseek-r1-vicky',
+                    'thinking': result.get('thinking_process'),
+                    'conversation_id': result.get('conversation_id'),
+                    'vicky_mood': result.get('vicky_mood')
+                }
+            else:
+                logger.error(f"Error backend chat: {response.status_code} - {response.text}")
+                return {'error': f'Error en chat: {response.status_code}'}
+            
+        except Exception as e:
+            logger.error(f"Error en chat con backend: {e}")
+            return {'error': f'Error de conexión con Vicky: {str(e)}'}
+    
+    def _simulate_thinking(self, user_message: str) -> str:
+        """Simula el proceso de razonamiento de DeepSeek R1"""
+        if not user_message:
+            return "Analizando consulta vacía..."
+        
+        # Análisis básico del mensaje
+        is_question = '?' in user_message
+        is_code_related = any(keyword in user_message.lower() for keyword in ['código', 'programar', 'función', 'script', 'python', 'javascript'])
+        is_math_related = any(keyword in user_message.lower() for keyword in ['matemática', 'calcular', 'número', 'ecuación'])
+        is_creative = any(keyword in user_message.lower() for keyword in ['crear', 'escribir', 'historia', 'poema', 'idea'])
+        
+        thinking = "🤔 **Proceso de razonamiento DeepSeek R1:**\n\n"
+        
+        if is_question:
+            thinking += "• Detecto una pregunta directa\n"
+            thinking += "• Analizando contexto y requerimientos\n"
+        
+        if is_code_related:
+            thinking += "• Consulta relacionada con programación\n"
+            thinking += "• Activando capacidades de análisis de código\n"
+        elif is_math_related:
+            thinking += "• Problema matemático identificado\n"
+            thinking += "• Preparando análisis numérico\n"
+        elif is_creative:
+            thinking += "• Tarea creativa detectada\n"
+            thinking += "• Activando generación creativa\n"
+        
+        thinking += f"• Procesando mensaje de {len(user_message)} caracteres\n"
+        thinking += "• Estructurando respuesta optimizada\n"
+        
+        return thinking
+    
+    def _generate_deepseek_response(self, user_message: str, thinking: str, messages: list) -> str:
+        """Genera una respuesta más inteligente simulando DeepSeek R1"""
+        
+        # Respuestas contextuales basadas en el tipo de consulta
+        if '?' in user_message:
+            if any(keyword in user_message.lower() for keyword in ['cómo', 'como', 'how']):
+                response = f"Para responder a tu pregunta sobre '{user_message}', te sugiero seguir estos pasos:\n\n"
+                response += "1. **Análisis del problema**: Primero identifica los componentes clave\n"
+                response += "2. **Planificación**: Estructura un enfoque paso a paso\n"
+                response += "3. **Implementación**: Ejecuta la solución de manera sistemática\n"
+                response += "4. **Validación**: Verifica que el resultado sea correcto\n\n"
+                response += "¿Te gustaría que profundice en alguno de estos pasos?"
+            
+            elif any(keyword in user_message.lower() for keyword in ['qué', 'que', 'what']):
+                response = f"Respecto a tu consulta '{user_message}', puedo explicarte que:\n\n"
+                response += "Este tema tiene varios aspectos importantes a considerar. Basándome en mi análisis, "
+                response += "los elementos más relevantes incluyen el contexto, las variables involucradas, "
+                response += "y las posibles soluciones o enfoques.\n\n"
+                response += "¿Hay algún aspecto específico en el que te gustaría que me enfoque?"
+            
+            else:
+                response = f"He analizado tu pregunta '{user_message}' y puedo ofrecerte una perspectiva estructurada:\n\n"
+                response += "Mi proceso de razonamiento sugiere que esta consulta requiere un enfoque multifacético. "
+                response += "Considerando las diferentes variables y contextos posibles, recomiendo explorar "
+                response += "tanto los aspectos teóricos como los prácticos del tema.\n\n"
+                response += "¿Te gustaría que desarrolle algún punto en particular?"
+        
+        elif any(keyword in user_message.lower() for keyword in ['código', 'programar', 'función', 'script']):
+            response = f"Como especialista en programación, analizo tu solicitud '{user_message}':\n\n"
+            response += "```\n// Enfoque recomendado:\n"
+            response += "1. Definir claramente los requisitos\n"
+            response += "2. Planificar la estructura del código\n"
+            response += "3. Implementar paso a paso\n"
+            response += "4. Testear y optimizar\n```\n\n"
+            response += "Para código de calidad, siempre considero:\n"
+            response += "• **Legibilidad**: Código claro y bien documentado\n"
+            response += "• **Eficiencia**: Optimización de recursos\n"
+            response += "• **Mantenibilidad**: Estructura modular\n"
+            response += "• **Robustez**: Manejo de errores\n\n"
+            response += "¿Qué lenguaje de programación prefieres usar?"
+        
+        elif any(keyword in user_message.lower() for keyword in ['crear', 'escribir', 'historia', 'poema']):
+            response = f"Para tu solicitud creativa '{user_message}', mi proceso generativo sugiere:\n\n"
+            response += "🎨 **Enfoque creativo:**\n"
+            response += "• Establecer el tono y estilo deseado\n"
+            response += "• Desarrollar elementos clave (personajes, temas, estructura)\n"
+            response += "• Crear un flujo narrativo coherente\n"
+            response += "• Pulir y refinar el resultado\n\n"
+            response += "Como modelo de razonamiento avanzado, puedo ayudarte a crear contenido original "
+            response += "que combine creatividad con estructura lógica.\n\n"
+            response += "¿Qué tipo de estilo o enfoque prefieres?"
+        
+        else:
+            # Respuesta general mejorada
+            response = f"He procesado tu mensaje '{user_message}' usando mis capacidades de razonamiento avanzado.\n\n"
+            response += "**Mi análisis indica:**\n"
+            response += "• Tu consulta es válida y merece una respuesta reflexiva\n"
+            response += "• Existen múltiples enfoques para abordar este tema\n"
+            response += "• Puedo ayudarte a explorar diferentes perspectivas\n\n"
+            response += "Como DeepSeek R1, mi fortaleza está en el razonamiento estructurado y el análisis profundo. "
+            response += "Puedo ayudarte con tareas de análisis, resolución de problemas, programación, "
+            response += "escritura creativa, matemáticas, y más.\n\n"
+            response += "¿Hay algún aspecto específico en el que te gustaría que me enfoque, o prefieres "
+            response += "que desarrolle una respuesta más detallada sobre tu consulta original?"
+        
+        return response
+    
     def _fallback_response(self, user_message: str) -> Dict[str, Any]:
         """Respuesta de fallback cuando no hay IA configurada"""
         responses = [
@@ -266,6 +575,34 @@ def translator():
     return render_template('translator.html')
 
 # API Routes para Chat
+@app.route('/api/chat/set-provider', methods=['POST'])
+def set_ai_provider():
+    """Cambia el proveedor de IA dinámicamente"""
+    try:
+        data = request.get_json()
+        
+        if not data or 'provider' not in data:
+            return jsonify({'error': 'Proveedor requerido'}), 400
+        
+        provider = data['provider']
+        api_key = data.get('api_key', '')
+        model = data.get('model', 'gpt-3.5-turbo')
+        
+        # Recrear el servicio de IA con el nuevo proveedor
+        global ai_service
+        ai_service = AIService(provider, api_key, model)
+        
+        return jsonify({
+            'success': True,
+            'provider': provider,
+            'model': model,
+            'message': f'Proveedor cambiado a {provider}'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error en set_ai_provider: {e}")
+        return jsonify({'error': 'Error al cambiar proveedor'}), 500
+
 @app.route('/api/chat/message', methods=['POST'])
 def chat_message():
     """Procesa mensaje de chat con IA"""

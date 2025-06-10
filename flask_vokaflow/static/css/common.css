@@ -4,14 +4,29 @@
 
 /* Reset y Variables CSS */
 :root {
-    /* Colores principales */
-    --primary-color: #2563eb;
-    --primary-dark: #1d4ed8;
-    --secondary-color: #7c3aed;
-    --accent-color: #06b6d4;
+    /* Colores principales - VokaFlow Branding OFICIAL */
+    --primary-color: #D8409F;
+    /* Magenta - Innovación, energía, modernidad */
+    --primary-dark: #B8357F;
+    /* Magenta oscuro */
+    --primary-light: #E865B5;
+    /* Magenta claro */
+    --secondary-color: #0078FF;
+    /* Azul eléctrico - Confianza, tecnología */
+    --secondary-dark: #0056CC;
+    /* Azul oscuro */
+    --accent-color: #FFA700;
+    /* Naranja brillante - Creatividad, dinamismo */
+    --accent-dark: #E6960A;
+    /* Naranja oscuro */
     --success-color: #10b981;
     --warning-color: #f59e0b;
     --error-color: #ef4444;
+
+    /* Gradientes VokaFlow OFICIALES */
+    --vokaflow-gradient: linear-gradient(135deg, #D8409F 0%, #0078FF 50%, #FFA700 100%);
+    --vokaflow-gradient-light: linear-gradient(135deg, rgba(216, 64, 159, 0.8) 0%, rgba(0, 120, 255, 0.8) 50%, rgba(255, 167, 0, 0.8) 100%);
+    --vokaflow-accent-gradient: linear-gradient(135deg, #FFA700 0%, #D8409F 50%, #0078FF 100%);
 
     /* Colores de fondo */
     --bg-primary: #ffffff;
@@ -142,6 +157,109 @@ body {
     color: var(--primary-dark);
 }
 
+/* Branding VokaFlow */
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.logo-icon {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    background: var(--vokaflow-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.sound-waves {
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sound-waves span {
+    width: 3px;
+    background: var(--accent-color);
+    border-radius: 2px;
+    animation: soundWave 1.5s ease-in-out infinite;
+}
+
+.sound-waves span:nth-child(1) {
+    height: 8px;
+    animation-delay: 0s;
+}
+
+.sound-waves span:nth-child(2) {
+    height: 12px;
+    animation-delay: 0.2s;
+}
+
+.sound-waves span:nth-child(3) {
+    height: 6px;
+    animation-delay: 0.4s;
+}
+
+@keyframes soundWave {
+
+    0%,
+    100% {
+        opacity: 0.3;
+        transform: scaleY(0.5);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.brand-name {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    background: var(--vokaflow-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.brand-accent {
+    color: var(--secondary-color);
+}
+
+.brand-tagline {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.brand-link:hover .logo-icon {
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    transform: translateY(-1px);
+}
+
+.brand-link:hover .sound-waves span {
+    animation-duration: 1s;
+}
+
 .nav-menu {
     display: flex;
     gap: var(--spacing-lg);
@@ -239,7 +357,7 @@ body {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.7);
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     z-index: var(--z-modal);

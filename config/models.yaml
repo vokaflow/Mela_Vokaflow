@@ -7,6 +7,13 @@ language_models:
       type: "local"
       path: "models/chat"
       enabled: true
+    deepseek-r1:
+      name: "deepseek-r1"
+      type: "local"
+      path: "models/deepseek-r1"
+      enabled: true
+      description: "DeepSeek R1 8B - Advanced reasoning model"
+      capabilities: ["chat", "reasoning", "thinking", "code"]
 
 translation_models:
   default: "translation-model"
@@ -46,4 +53,4 @@ embeddings:
 
 # Configuración general
 cache_enabled: true
-fallback_enabled: true 
+fallback_enabled: true

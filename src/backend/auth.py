@@ -46,7 +46,6 @@ def verify_token(token: str):
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from .database import get_db, UserDB
 from typing import Optional
 
 # Esquema de seguridad
@@ -141,6 +140,30 @@ def get_optional_user(
         )
     except Exception:
         return None
+
+# Alias para compatibilidad con los routers
+get_current_user_optional = get_optional_user
+
+# Importaciones tardías para evitar dependencias circulares
+def get_db():
+    """Importación tardía de get_db"""
+    from src.backend.models import get_db as _get_db
+    return _get_db()
+
+def get_user_db_model():
+    """Importación tardía de UserDB"""
+    from src.backend.models import UserDB
+    return UserDB
+
+# Variable global para UserDB
+UserDB = None
+
+def initialize_auth():
+    """Inicializa las dependencias de autenticación"""
+    global UserDB
+    from src.backend.models import UserDB as _UserDB, get_db as _get_db
+    UserDB = _UserDB
+    return UserDB
 
 # Función para crear un usuario de prueba
 def create_test_user(db: Session) -> UserDB:

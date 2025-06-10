@@ -1,253 +1,274 @@
 {% extends "base.html" %}
 
-{% block title %}VokaFlow - Inicio{% endblock %}
+{% block title %}VokaFlow - Sistema de Comunicación Inteligente{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="home-container">
-    <!-- Hero Section -->
-    <section class="hero">
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-container">
         <div class="hero-content">
             <div class="hero-text">
                 <h1 class="hero-title">
-                    <span class="gradient-text">VokaFlow</span>
-                    <span class="hero-subtitle">Comunicación Inteligente</span>
+                    Bienvenido a
+                    <span class="hero-brand">
+                        <span class="voka">Voka</span><span class="flow">Flow</span>
+                    </span>
                 </h1>
-                <p class="hero-description">
-                    Experimenta el futuro de la comunicación con IA avanzada y traducción en tiempo real.
-                    Habla, escribe, traduce y conecta sin barreras.
+                <p class="hero-subtitle">
+                    Tu plataforma de comunicación inteligente con IA avanzada y traducción universal.
+                    Conecta, comunica y comprende sin barreras lingüísticas.
                 </p>
-                <div class="hero-stats">
-                    <div class="stat">
-                        <span class="stat-number">40+</span>
-                        <span class="stat-label">Idiomas</span>
+                <div class="hero-features">
+                    <div class="feature-item">
+                        <i class="fas fa-brain"></i>
+                        <span>IA Avanzada</span>
                     </div>
-                    <div class="stat">
-                        <span class="stat-number">AI</span>
-                        <span class="stat-label">Powered</span>
+                    <div class="feature-item">
+                        <i class="fas fa-language"></i>
+                        <span>40+ Idiomas</span>
                     </div>
-                    <div class="stat">
-                        <span class="stat-number">24/7</span>
-                        <span class="stat-label">Disponible</span>
+                    <div class="feature-item">
+                        <i class="fas fa-microphone"></i>
+                        <span>Audio en Tiempo Real</span>
                     </div>
+                </div>
+                <div class="hero-actions">
+                    <a href="{{ url_for('chat') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-comments"></i>
+                        Comenzar Chat
+                    </a>
+                    <a href="{{ url_for('translator') }}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-language"></i>
+                        Traducir Ahora
+                    </a>
                 </div>
             </div>
             <div class="hero-visual">
-                <div class="floating-icon">
-                    <i class="fas fa-microphone-alt"></i>
-                </div>
-                <div class="floating-icon delay-1">
-                    <i class="fas fa-language"></i>
-                </div>
-                <div class="floating-icon delay-2">
-                    <i class="fas fa-comments"></i>
+                <div class="visual-container">
+                    <div class="ai-visualization">
+                        <div class="ai-core">
+                            <i class="fas fa-robot"></i>
+                            <div class="pulse-rings">
+                                <div class="pulse-ring"></div>
+                                <div class="pulse-ring"></div>
+                                <div class="pulse-ring"></div>
+                            </div>
+                        </div>
+                        <div class="floating-elements">
+                            <div class="floating-element" data-text="Hola">
+                                <i class="fas fa-comment"></i>
+                            </div>
+                            <div class="floating-element" data-text="Hello">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="floating-element" data-text="Bonjour">
+                                <i class="fas fa-microphone"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Main Features -->
-    <section class="features">
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Características Principales</h2>
+            <p>Descubre todo lo que VokaFlow puede hacer por ti</p>
+        </div>
+
         <div class="features-grid">
-            <!-- Chat IA Feature -->
-            <div class="feature-card chat-card">
+            <!-- Chat con IA -->
+            <div class="feature-card">
                 <div class="feature-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <div class="feature-content">
-                    <h3 class="feature-title">Chat con IA</h3>
-                    <p class="feature-description">
-                        Conversa con inteligencia artificial avanzada. Obtén respuestas inteligentes,
-                        ayuda personalizada y soporte las 24 horas.
-                    </p>
-                    <div class="feature-highlights">
-                        <span class="highlight">
-                            <i class="fas fa-microphone"></i>
-                            Entrada por voz
-                        </span>
-                        <span class="highlight">
-                            <i class="fas fa-volume-up"></i>
-                            Respuestas en audio
-                        </span>
-                        <span class="highlight">
-                            <i class="fas fa-brain"></i>
-                            IA Avanzada
-                        </span>
-                    </div>
-                    <a href="{{ url_for('chat') }}" class="feature-button">
-                        <span>Comenzar Chat</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Traductor Feature -->
-            <div class="feature-card translator-card">
-                <div class="feature-icon">
-                    <i class="fas fa-globe"></i>
-                </div>
-                <div class="feature-content">
-                    <h3 class="feature-title">Traductor Universal</h3>
-                    <p class="feature-description">
-                        Traduce texto y audio entre más de 40 idiomas con precisión profesional.
-                        Comunicación sin barreras.
-                    </p>
-                    <div class="feature-highlights">
-                        <span class="highlight">
-                            <i class="fas fa-language"></i>
-                            40+ Idiomas
-                        </span>
-                        <span class="highlight">
-                            <i class="fas fa-magic"></i>
-                            Detección automática
-                        </span>
-                        <span class="highlight">
-                            <i class="fas fa-headphones"></i>
-                            Audio bidireccional
-                        </span>
-                    </div>
-                    <a href="{{ url_for('translator') }}" class="feature-button">
-                        <span>Abrir Traductor</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Capabilities Section -->
-    <section class="capabilities">
-        <div class="capabilities-header">
-            <h2 class="section-title">Capacidades Avanzadas</h2>
-            <p class="section-description">
-                Tecnología de última generación para una experiencia de comunicación superior
-            </p>
-        </div>
-
-        <div class="capabilities-grid">
-            <div class="capability">
-                <div class="capability-icon">
-                    <i class="fas fa-microphone-alt"></i>
-                </div>
-                <h4 class="capability-title">Reconocimiento de Voz</h4>
-                <p class="capability-description">
-                    Whisper AI para transcripción precisa en múltiples idiomas
-                </p>
-            </div>
-
-            <div class="capability">
-                <div class="capability-icon">
-                    <i class="fas fa-volume-up"></i>
-                </div>
-                <h4 class="capability-title">Síntesis de Voz</h4>
-                <p class="capability-description">
-                    XTTS-V2 para voces naturales y expresivas en tiempo real
-                </p>
-            </div>
-
-            <div class="capability">
-                <div class="capability-icon">
                     <i class="fas fa-brain"></i>
                 </div>
-                <h4 class="capability-title">IA Conversacional</h4>
-                <p class="capability-description">
-                    Modelos de lenguaje avanzados para conversaciones naturales
-                </p>
-            </div>
-
-            <div class="capability">
-                <div class="capability-icon">
-                    <i class="fas fa-exchange-alt"></i>
+                <div class="feature-content">
+                    <h3>Chat Inteligente</h3>
+                    <p>Conversa con DeepSeek R1, un modelo de IA avanzado con capacidades de razonamiento y análisis
+                        profundo.</p>
+                    <ul class="feature-list">
+                        <li>Procesamiento de lenguaje natural</li>
+                        <li>Análisis y razonamiento complejo</li>
+                        <li>Respuestas contextuales</li>
+                        <li>Múltiples proveedores de IA</li>
+                    </ul>
+                    <a href="{{ url_for('chat') }}" class="feature-link">
+                        Probar Chat <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
-                <h4 class="capability-title">Traducción Inteligente</h4>
-                <p class="capability-description">
-                    Traducción contextual con preservación del significado
-                </p>
             </div>
 
-            <div class="capability">
-                <div class="capability-icon">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                <h4 class="capability-title">Tiempo Real</h4>
-                <p class="capability-description">
-                    Procesamiento ultrarrápido para conversaciones fluidas
-                </p>
-            </div>
-
-            <div class="capability">
-                <div class="capability-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <h4 class="capability-title">Privacidad Garantizada</h4>
-                <p class="capability-description">
-                    Datos seguros con procesamiento local y encriptación
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Quick Actions -->
-    <section class="quick-actions">
-        <div class="actions-container">
-            <h3 class="actions-title">¿Qué quieres hacer hoy?</h3>
-            <div class="actions-grid">
-                <button class="action-btn" data-action="navigate" data-url="{{ url_for('chat') }}">
-                    <i class="fas fa-comments"></i>
-                    <span>Chatear con IA</span>
-                </button>
-                <button class="action-btn" data-action="navigate" data-url="{{ url_for('translator') }}">
+            <!-- Traductor Universal -->
+            <div class="feature-card">
+                <div class="feature-icon">
                     <i class="fas fa-language"></i>
-                    <span>Traducir Texto</span>
-                </button>
-                <button class="action-btn" onclick="testMicrophone()">
-                    <i class="fas fa-microphone"></i>
-                    <span>Probar Micrófono</span>
-                </button>
-                <button class="action-btn" onclick="checkSystemStatus()">
-                    <i class="fas fa-cog"></i>
-                    <span>Estado del Sistema</span>
-                </button>
+                </div>
+                <div class="feature-content">
+                    <h3>Traductor Universal</h3>
+                    <p>Traduce texto y audio entre más de 40 idiomas con precisión profesional y detección automática.
+                    </p>
+                    <ul class="feature-list">
+                        <li>Traducción de texto y audio</li>
+                        <li>Detección automática de idioma</li>
+                        <li>Síntesis de voz multiidioma</li>
+                        <li>Historial de traducciones</li>
+                    </ul>
+                    <a href="{{ url_for('translator') }}" class="feature-link">
+                        Traducir Ahora <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
-        </div>
-    </section>
 
-    <!-- System Status -->
-    <section class="system-status" id="system-status">
-        <div class="status-container">
-            <h4 class="status-title">
-                <i class="fas fa-heartbeat"></i>
-                Estado del Sistema
-            </h4>
-            <div class="status-grid" id="status-grid">
-                <div class="status-item">
-                    <span class="status-label">Backend</span>
-                    <span class="status-value" id="backend-status-value">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        Verificando...
-                    </span>
+            <!-- Comunicación por Voz -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-microphone"></i>
                 </div>
-                <div class="status-item">
-                    <span class="status-label">IA Configurada</span>
-                    <span class="status-value" id="ai-status-value">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        Verificando...
-                    </span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Funciones</span>
-                    <span class="status-value" id="features-status-value">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        Verificando...
-                    </span>
+                <div class="feature-content">
+                    <h3>Audio Inteligente</h3>
+                    <p>Interactúa usando tu voz con transcripción automática y síntesis de voz en tiempo real.</p>
+                    <ul class="feature-list">
+                        <li>Reconocimiento de voz avanzado</li>
+                        <li>Síntesis de voz natural</li>
+                        <li>Transcripción en tiempo real</li>
+                        <li>Múltiples voces y acentos</li>
+                    </ul>
+                    <button class="feature-link" onclick="testMicrophone()">
+                        Probar Micrófono <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </section>
-</div>
+    </div>
+</section>
+
+<!-- Technology Section -->
+<section class="technology-section">
+    <div class="container">
+        <div class="tech-content">
+            <div class="tech-text">
+                <h2>Tecnología de Vanguardia</h2>
+                <p>VokaFlow utiliza las últimas tecnologías de inteligencia artificial y procesamiento de lenguaje
+                    natural para ofrecerte la mejor experiencia de comunicación.</p>
+
+                <div class="tech-features">
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div class="tech-info">
+                            <h4>DeepSeek R1</h4>
+                            <p>Modelo de IA con capacidades avanzadas de razonamiento y análisis profundo</p>
+                        </div>
+                    </div>
+
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div class="tech-info">
+                            <h4>Backend Robusto</h4>
+                            <p>Arquitectura escalable con APIs optimizadas para alto rendimiento</p>
+                        </div>
+                    </div>
+
+                    <div class="tech-item">
+                        <div class="tech-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="tech-info">
+                            <h4>Privacidad y Seguridad</h4>
+                            <p>Protección de datos con estándares de seguridad empresariales</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tech-visual">
+                <div class="tech-diagram">
+                    <div class="diagram-layer">
+                        <div class="diagram-node" data-tech="IA">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="diagram-node" data-tech="STT">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <div class="diagram-node" data-tech="TTS">
+                            <i class="fas fa-volume-up"></i>
+                        </div>
+                        <div class="diagram-node" data-tech="Traducción">
+                            <i class="fas fa-language"></i>
+                        </div>
+                    </div>
+                    <div class="diagram-connections">
+                        <svg class="connections-svg">
+                            <line x1="50%" y1="20%" x2="50%" y2="80%" stroke="url(#gradient)" stroke-width="2" />
+                            <line x1="20%" y1="50%" x2="80%" y2="50%" stroke="url(#gradient)" stroke-width="2" />
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">40+</div>
+                <div class="stat-label">Idiomas Soportados</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">99.9%</div>
+                <div class="stat-label">Precisión en IA</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Disponibilidad</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">&lt;1s</div>
+                <div class="stat-label">Tiempo de Respuesta</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2>¿Listo para comenzar?</h2>
+            <p>Únete a la revolución de la comunicación inteligente con VokaFlow</p>
+            <div class="cta-actions">
+                <a href="{{ url_for('chat') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-rocket"></i>
+                    Comenzar Ahora
+                </a>
+                <button class="btn btn-ghost btn-lg" onclick="checkSystemStatus()">
+                    <i class="fas fa-info-circle"></i>
+                    Estado del Sistema
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
 
 {% block extra_js %}

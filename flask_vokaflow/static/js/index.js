@@ -1,27 +1,114 @@
 /* ================================================
-   VokaFlow WebApp - JavaScript de la Página de Inicio
+   VokaFlow - Página Principal - JavaScript
    ================================================ */
 
-// Inicialización de la página de inicio
+// Inicialización cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function () {
-    Logger.info('Index page initialized');
+    Logger.info('VokaFlow Index Page loaded');
 
     // Inicializar animaciones
-    initializeAnimations();
+    initAnimations();
 
-    // Cargar estado del sistema
-    loadSystemStatus();
+    // Configurar eventos interactivos
+    bindEvents();
 
-    // Configurar interacciones
-    setupInteractions();
-
-    // Verificar estado del sistema automáticamente
-    setInterval(loadSystemStatus, 60000); // Cada minuto
+    // Verificar estado del sistema
+    checkInitialStatus();
 });
 
-// Configurar animaciones de entrada
-function initializeAnimations() {
-    // Observador de intersección para animaciones al scroll
+function initAnimations() {
+    // Animación de contador de estadísticas
+    animateStats();
+
+    // Animación de elementos flotantes
+    enhanceFloatingElements();
+
+    // Intersección observada para animaciones on-scroll
+    setupScrollAnimations();
+}
+
+function animateStats() {
+    const statNumbers = document.querySelectorAll('.stat-number');
+
+    const animateNumber = (element, target, duration = 2000) => {
+        const start = 0;
+        const startTime = performance.now();
+
+        const updateNumber = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Función de easing
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+
+            if (target.includes('+')) {
+                const num = parseInt(target.replace('+', ''));
+                const current = Math.floor(easeOut * num);
+                element.textContent = current + '+';
+            } else if (target.includes('%')) {
+                const num = parseFloat(target.replace('%', ''));
+                const current = (easeOut * num).toFixed(1);
+                element.textContent = current + '%';
+            } else if (target.includes('<')) {
+                // Para "&lt;1s"
+                element.textContent = target;
+            } else if (target.includes('/')) {
+                // Para "24/7"
+                element.textContent = target;
+            } else {
+                const num = parseInt(target);
+                const current = Math.floor(easeOut * num);
+                element.textContent = current;
+            }
+
+            if (progress < 1) {
+                requestAnimationFrame(updateNumber);
+            }
+        };
+
+        requestAnimationFrame(updateNumber);
+    };
+
+    // Observer para cuando las estadísticas sean visibles
+    const statsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const target = entry.target.textContent;
+                animateNumber(entry.target, target);
+                statsObserver.unobserve(entry.target);
+            }
+        });
+    });
+
+    statNumbers.forEach(stat => {
+        statsObserver.observe(stat);
+    });
+}
+
+function enhanceFloatingElements() {
+    const floatingElements = document.querySelectorAll('.floating-element');
+
+    floatingElements.forEach((element, index) => {
+        // Agregar tooltip con el texto
+        const text = element.dataset.text;
+        if (text) {
+            element.setAttribute('title', text);
+        }
+
+        // Agregar interactividad
+        element.addEventListener('mouseenter', () => {
+            element.style.transform = 'scale(1.1)';
+            element.style.background = 'rgba(255, 255, 255, 0.25)';
+        });
+
+        element.addEventListener('mouseleave', () => {
+            element.style.transform = 'scale(1)';
+            element.style.background = 'rgba(255, 255, 255, 0.15)';
+        });
+    });
+}
+
+function setupScrollAnimations() {
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
@@ -36,452 +123,224 @@ function initializeAnimations() {
     }, observerOptions);
 
     // Observar elementos que deben animarse
-    const animatedElements = document.querySelectorAll(
-        '.feature-card, .capability, .action-btn'
-    );
-
-    animatedElements.forEach(el => {
+    const animateElements = document.querySelectorAll('.feature-card, .tech-item, .diagram-node');
+    animateElements.forEach(el => {
         observer.observe(el);
     });
-
-    // Animación del contador en las estadísticas
-    animateCounters();
 }
 
-// Animar contadores numérticos
-function animateCounters() {
-    const counters = document.querySelectorAll('.stat-number');
+function bindEvents() {
+    // Botones de navegación con animación
+    const navButtons = document.querySelectorAll('.hero-actions .btn');
+    navButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            // Agregar efecto visual
+            button.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 150);
+        });
+    });
 
-    counters.forEach(counter => {
-        const target = counter.textContent.trim();
+    // Enlaces de características con seguimiento
+    const featureLinks = document.querySelectorAll('.feature-link');
+    featureLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            const feature = link.closest('.feature-card').querySelector('h3').textContent;
+            Logger.info(`Feature clicked: ${feature}`);
+        });
+    });
 
-        // Solo animar números
-        if (/^\d+/.test(target)) {
-            const number = parseInt(target);
-            animateNumber(counter, 0, number, 2000);
-        }
+    // Nodos del diagrama tecnológico con información
+    const diagramNodes = document.querySelectorAll('.diagram-node');
+    diagramNodes.forEach(node => {
+        const tech = node.dataset.tech;
+
+        node.addEventListener('mouseenter', () => {
+            showTechInfo(node, tech);
+        });
+
+        node.addEventListener('mouseleave', () => {
+            hideTechInfo();
+        });
     });
 }
 
-// Animar un número desde start hasta end
-function animateNumber(element, start, end, duration) {
-    const startTime = performance.now();
+function showTechInfo(node, tech) {
+    // Crear tooltip temporal
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tech-tooltip';
+    tooltip.style.cssText = `
+        position: absolute;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        pointer-events: none;
+        white-space: nowrap;
+        border: 1px solid var(--border-color);
+    `;
 
-    function updateNumber(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
+    const techDescriptions = {
+        'IA': 'Inteligencia Artificial Avanzada',
+        'STT': 'Speech-to-Text (Voz a Texto)',
+        'TTS': 'Text-to-Speech (Texto a Voz)',
+        'Traducción': 'Traducción Multi-idioma'
+    };
 
-        // Easing function (ease out)
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const current = Math.floor(start + (end - start) * easeOut);
+    tooltip.textContent = techDescriptions[tech] || tech;
 
-        element.textContent = current + (element.textContent.includes('+') ? '+' : '');
+    const rect = node.getBoundingClientRect();
+    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+    tooltip.style.top = (rect.bottom + 10) + 'px';
+    tooltip.style.transform = 'translateX(-50%)';
 
-        if (progress < 1) {
-            requestAnimationFrame(updateNumber);
-        }
-    }
+    document.body.appendChild(tooltip);
 
-    requestAnimationFrame(updateNumber);
+    // Animar entrada
+    setTimeout(() => {
+        tooltip.style.opacity = '1';
+        tooltip.style.transform = 'translateX(-50%) translateY(0)';
+    }, 10);
 }
 
-// Cargar y mostrar estado del sistema
-async function loadSystemStatus() {
+function hideTechInfo() {
+    const tooltip = document.querySelector('.tech-tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
+}
+
+async function checkInitialStatus() {
     try {
         const status = await SystemStatus.check();
 
-        if (status) {
-            updateStatusDisplay(status);
+        if (status && status.services.backend === 'online') {
+            Logger.info('Backend conectado correctamente');
+
+            // Mostrar notificación de bienvenida
+            setTimeout(() => {
+                Notifications.success('¡Bienvenido a VokaFlow! Sistema listo para usar.', 4000);
+            }, 1000);
+        } else {
+            Logger.warn('Backend desconectado');
+
+            // Mostrar información sobre modo demo
+            setTimeout(() => {
+                Notifications.info('Ejecutándose en modo demo. Algunas funciones pueden estar limitadas.', 6000);
+            }, 1500);
         }
     } catch (error) {
-        Logger.error('Error loading system status:', error);
+        Logger.error('Error verificando estado inicial:', error);
     }
 }
 
-// Actualizar visualización del estado
-function updateStatusDisplay(status) {
-    // Actualizar estado del backend
-    const backendStatus = document.getElementById('backend-status-value');
-    if (backendStatus) {
-        const isOnline = status.services?.backend === 'online';
-        backendStatus.innerHTML = `
-            <i class="fas fa-circle" style="color: ${isOnline ? 'var(--success-color)' : 'var(--error-color)'}"></i>
-            ${isOnline ? 'Online' : 'Offline'}
-        `;
-        backendStatus.className = `status-value ${isOnline ? 'online' : 'offline'}`;
-    }
-
-    // Actualizar estado de IA
-    const aiStatus = document.getElementById('ai-status-value');
-    if (aiStatus) {
-        const isConfigured = status.services?.ai_configured;
-        aiStatus.innerHTML = `
-            <i class="fas fa-circle" style="color: ${isConfigured ? 'var(--success-color)' : 'var(--warning-color)'}"></i>
-            ${isConfigured ? 'Configurada' : 'Sin configurar'}
-        `;
-        aiStatus.className = `status-value ${isConfigured ? 'online' : 'offline'}`;
-    }
-
-    // Actualizar estado de funcionalidades
-    const featuresStatus = document.getElementById('features-status-value');
-    if (featuresStatus) {
-        const features = status.features || {};
-        const activeFeatures = Object.values(features).filter(Boolean).length;
-        const totalFeatures = Object.keys(features).length;
-
-        featuresStatus.innerHTML = `
-            <i class="fas fa-cog" style="color: var(--primary-color)"></i>
-            ${activeFeatures}/${totalFeatures} activas
-        `;
-        featuresStatus.className = 'status-value online';
-    }
-}
-
-// Configurar interacciones de la página
-function setupInteractions() {
-    // Configurar botones de acción rápida
-    setupQuickActions();
-
-    // Configurar cards de características
-    setupFeatureCards();
-
-    // Configurar traducciones populares
-    setupPopularTranslations();
-}
-
-// Configurar acciones rápidas
-function setupQuickActions() {
-    const actionButtons = document.querySelectorAll('.action-btn');
-
-    actionButtons.forEach(button => {
-        button.addEventListener('mouseenter', () => {
-            button.style.transform = 'translateY(-3px) scale(1.02)';
-        });
-
-        button.addEventListener('mouseleave', () => {
-            button.style.transform = '';
-        });
-    });
-}
-
-// Configurar cards de características
-function setupFeatureCards() {
-    const featureCards = document.querySelectorAll('.feature-card');
-
-    featureCards.forEach(card => {
-        // Efecto parallax sutil en el movimiento del mouse
-        card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-
-            const rotateX = (y - centerY) / 20;
-            const rotateY = (centerX - x) / 20;
-
-            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
-        });
-
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = '';
-        });
-
-        // Efecto de click
-        card.addEventListener('click', (e) => {
-            // Si el click no es en el botón, navegar a la página
-            if (!e.target.closest('.feature-button')) {
-                const button = card.querySelector('.feature-button');
-                if (button) {
-                    button.click();
-                }
-            }
-        });
-    });
-}
-
-// Configurar traducciones populares (si existen en la página)
-function setupPopularTranslations() {
-    const popularItems = document.querySelectorAll('.popular-item');
-
-    popularItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const source = item.dataset.source;
-            const sourceLang = item.dataset.sourceLang;
-            const targetLang = item.dataset.targetLang;
-
-            // Redirigir al traductor con parámetros
-            const params = new URLSearchParams({
-                text: source,
-                from: sourceLang,
-                to: targetLang
-            });
-
-            window.location.href = `/translator?${params.toString()}`;
-        });
-
-        // Efecto hover
-        item.addEventListener('mouseenter', () => {
-            item.style.transform = 'translateY(-2px)';
-            item.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
-        });
-
-        item.addEventListener('mouseleave', () => {
-            item.style.transform = '';
-            item.style.boxShadow = '';
-        });
-    });
-}
-
-// Funciones globales para los botones de acción
-window.navigateToChat = function () {
+// Funciones globales para botones de la página
+window.startChat = function () {
+    Logger.info('Navigating to chat...');
     window.location.href = '/chat';
 };
 
-window.navigateToTranslator = function () {
+window.startTranslator = function () {
+    Logger.info('Navigating to translator...');
     window.location.href = '/translator';
 };
 
-// Función para probar conectividad con el backend
-window.testBackendConnection = async function () {
-    Loading.show('Probando conexión con el backend...');
-
-    try {
-        const response = await fetch('/api/status');
-        const data = await response.json();
-
-        Loading.hide();
-
-        if (response.ok) {
-            Notifications.success('Conexión con el backend exitosa');
-            updateStatusDisplay(data);
-        } else {
-            Notifications.error('Error al conectar con el backend');
-        }
-    } catch (error) {
-        Loading.hide();
-        Logger.error('Backend connection test failed:', error);
-        Notifications.error('No se pudo conectar con el backend');
+window.scrollToFeatures = function () {
+    const featuresSection = document.querySelector('.features-section');
+    if (featuresSection) {
+        featuresSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
     }
 };
 
-// Función para mostrar detalles del sistema
-window.showSystemDetails = function () {
-    const modal = createSystemModal();
-    document.body.appendChild(modal);
+// Demo de características
+window.demoChat = function () {
+    Logger.info('Chat demo requested');
 
-    // Centrar y mostrar el modal
+    Notifications.info('Dirigiéndote al chat inteligente...', 2000);
+
     setTimeout(() => {
-        modal.classList.add('show');
-    }, 10);
+        window.location.href = '/chat';
+    }, 1000);
 };
 
-// Crear modal con detalles del sistema
-function createSystemModal() {
-    const modal = document.createElement('div');
-    modal.className = 'system-modal';
-    modal.innerHTML = `
-        <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Detalles del Sistema</h3>
-                <button class="modal-close" onclick="this.closest('.system-modal').remove()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="system-info">
-                    <h4>Configuración</h4>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <label>Versión:</label>
-                            <span>${VokaFlow.version}</span>
-                        </div>
-                        <div class="info-item">
-                            <label>Backend URL:</label>
-                            <span>${VokaFlow.backendUrl}</span>
-                        </div>
-                        <div class="info-item">
-                            <label>Debug:</label>
-                            <span>${VokaFlow.debug ? 'Activado' : 'Desactivado'}</span>
-                        </div>
-                        <div class="info-item">
-                            <label>Navegador:</label>
-                            <span>${navigator.userAgent.split(' ')[0]}</span>
-                        </div>
-                    </div>
-                    
-                    <h4>Capacidades del Navegador</h4>
-                    <div class="capabilities-list">
-                        <div class="capability-item ${AudioRecorder.isSupported() ? 'supported' : 'not-supported'}">
-                            <i class="fas fa-microphone"></i>
-                            <span>Grabación de Audio</span>
-                            <i class="fas ${AudioRecorder.isSupported() ? 'fa-check text-success' : 'fa-times text-error'}"></i>
-                        </div>
-                        <div class="capability-item ${navigator.clipboard ? 'supported' : 'not-supported'}">
-                            <i class="fas fa-clipboard"></i>
-                            <span>Portapapeles</span>
-                            <i class="fas ${navigator.clipboard ? 'fa-check text-success' : 'fa-times text-error'}"></i>
-                        </div>
-                        <div class="capability-item ${navigator.serviceWorker ? 'supported' : 'not-supported'}">
-                            <i class="fas fa-cog"></i>
-                            <span>Service Worker</span>
-                            <i class="fas ${navigator.serviceWorker ? 'fa-check text-success' : 'fa-times text-error'}"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="this.closest('.system-modal').remove()">
-                    Cerrar
-                </button>
-                <button class="btn btn-primary" onclick="testBackendConnection()">
-                    Probar Conexión
-                </button>
-            </div>
-        </div>
-    `;
+window.demoTranslator = function () {
+    Logger.info('Translator demo requested');
 
-    // Estilos del modal
-    const style = document.createElement('style');
-    style.textContent = `
-        .system-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: var(--z-modal);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .system-modal.show {
-            opacity: 1;
-        }
-        
-        .modal-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-        }
-        
-        .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--bg-card);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-xl);
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header {
-            padding: var(--spacing-lg);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: var(--font-size-lg);
-            cursor: pointer;
-            color: var(--text-secondary);
-            padding: var(--spacing-xs);
-        }
-        
-        .modal-body {
-            padding: var(--spacing-lg);
-        }
-        
-        .info-grid {
-            display: grid;
-            gap: var(--spacing-sm);
-            margin-bottom: var(--spacing-lg);
-        }
-        
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            padding: var(--spacing-xs) 0;
-        }
-        
-        .info-item label {
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-        
-        .capabilities-list {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-sm);
-        }
-        
-        .capability-item {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm);
-            background: var(--bg-secondary);
-            border-radius: var(--border-radius);
-        }
-        
-        .capability-item i:first-child {
-            color: var(--primary-color);
-        }
-        
-        .capability-item span {
-            flex: 1;
-        }
-        
-        .modal-footer {
-            padding: var(--spacing-lg);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            gap: var(--spacing-sm);
-            justify-content: flex-end;
-        }
-    `;
+    Notifications.info('Abriendo el traductor universal...', 2000);
 
-    modal.appendChild(style);
-    return modal;
+    setTimeout(() => {
+        window.location.href = '/translator';
+    }, 1000);
+};
+
+// Efectos visuales adicionales
+function addVisualEffects() {
+    // Parallax suave en hero
+    let lastScrollTop = 0;
+
+    window.addEventListener('scroll', Utils.throttle(() => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollDirection = scrollTop > lastScrollTop ? 'down' : 'up';
+
+        // Efecto parallax en elementos del hero
+        const heroVisual = document.querySelector('.hero-visual');
+        if (heroVisual && scrollTop < window.innerHeight) {
+            const offset = scrollTop * 0.3;
+            heroVisual.style.transform = `translateY(${offset}px)`;
+        }
+
+        lastScrollTop = scrollTop;
+    }, 10));
 }
 
-// Agregar CSS para animaciones
-const animationStyle = document.createElement('style');
-animationStyle.textContent = `
-    .animate-in {
-        animation: slideInUp 0.6s ease-out forwards;
-    }
-    
-    @keyframes slideInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .feature-card, .capability, .action-btn {
+// CSS adicional para animaciones
+const additionalStyles = `
+    .feature-card, .tech-item {
         opacity: 0;
         transform: translateY(30px);
         transition: all 0.6s ease-out;
     }
+    
+    .feature-card.animate-in, .tech-item.animate-in {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .diagram-node {
+        transition: all 0.3s ease;
+    }
+    
+    .diagram-node:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
+    }
+    
+    .tech-tooltip {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+        transition: all 0.2s ease;
+    }
 `;
 
-document.head.appendChild(animationStyle);
+// Agregar estilos adicionales
+const styleSheet = document.createElement('style');
+styleSheet.textContent = additionalStyles;
+document.head.appendChild(styleSheet);
+
+// Inicializar efectos visuales
+setTimeout(addVisualEffects, 500);
+
+// Actualizar indicadores cada 30 segundos
+setInterval(() => {
+    SystemStatus.check();
+}, 30000);
+
+Logger.info('VokaFlow Index JavaScript initialized');
